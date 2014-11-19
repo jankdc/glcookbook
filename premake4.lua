@@ -46,3 +46,10 @@ solution "glcookbook"
             "src/window_creation/**.cpp", 
             "src/window_creation/**.h"
         }
+
+    project "triangle"
+        location "build/triangle"
+        files {
+            "src/triangle/**.cpp",
+            "src/triangle/**.h"
+        }
