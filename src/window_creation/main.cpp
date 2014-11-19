@@ -1,9 +1,9 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-const int WINDOW_WIDTH  = 800;
-const int WINDOW_HEIGHT = 600;
-const char* WINDOW_TITLE  = "GL Cook Book - Window Creation";
+const auto WINDOW_WIDTH  = 800;
+const auto WINDOW_HEIGHT = 600;
+const auto WINDOW_TITLE  = "GL Cook Book - Window Creation";
 
 int main(int argc, char const *argv[])
 {
@@ -14,12 +14,12 @@ int main(int argc, char const *argv[])
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-    GLFWwindow* window = glfwCreateWindow(
+    auto window = glfwCreateWindow(
         WINDOW_WIDTH, 
         WINDOW_HEIGHT, 
         WINDOW_TITLE, 
-        NULL, 
-        NULL);
+        nullptr, 
+        nullptr);
 
     glfwMakeContextCurrent(window);
 
