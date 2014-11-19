@@ -5,6 +5,8 @@ const auto WINDOW_WIDTH  = 800;
 const auto WINDOW_HEIGHT = 600;
 const auto WINDOW_TITLE  = "GL Cook Book - Window Creation";
 
+void onKeyChange(GLFWwindow* window, int key, int scancode, int action, int mode);
+
 int main(int argc, char const *argv[])
 {
     glfwInit();
@@ -22,6 +24,7 @@ int main(int argc, char const *argv[])
         nullptr);
 
     glfwMakeContextCurrent(window);
+    glfwSetKeyCallback(window, onKeyChange);
 
     // Give access to modern GL functions
     glewExperimental = GL_TRUE;
@@ -42,4 +45,11 @@ int main(int argc, char const *argv[])
 
     glfwTerminate();
     return 0;
+}
+
+void onKeyChange(GLFWwindow* window, int key, int scancode, int action, int mode)
+{
+    if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+        glfwSetWindowShouldClose(window, GL_TRUE);
+    }
 }
