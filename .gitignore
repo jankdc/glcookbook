@@ -26,3 +26,8 @@
 *.exe
 *.out
 *.app
+
+# Generated Files and Folders from premake
+out/
+build/
+Makefile
