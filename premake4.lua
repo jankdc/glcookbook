@@ -1,5 +1,5 @@
 solution "glcookbook"
-    configurations {"Release", "Debug"}
+    configurations {"Debug", "Release"}
         language "C++"
 
         defines {
@@ -53,3 +53,12 @@ solution "glcookbook"
             "src/triangle/**.cpp",
             "src/triangle/**.h"
         }
+
+    configuration {"macosx"}
+        local base = path.getabsolute(".")
+        local res  = base .. "/res"
+        local rel  = base .. "/out/release"
+        local deb  = base .. "/out/debug"
+
+        postbuildcommands(table.concat({"cp -r", res, rel}, " "))
+        postbuildcommands(table.concat({"cp -r", res, deb}, " "))

@@ -2,26 +2,11 @@
 #include <GLFW/glfw3.h>
 
 #include <iostream>
+#include <fstream>
 
 const auto WINDOW_WIDTH  = 800;
 const auto WINDOW_HEIGHT = 600;
 const auto WINDOW_TITLE  = "GL Cook Book - Creating a Triangle";
-
-const auto VERTEX_SHADER_SOURCE = 
-    "#version 330 core\n"
-    "layout (location = 0) in vec2 position;\n"
-    "void main()\n"
-    "{\n"
-    "    gl_Position = vec4(position.x, position.y, 0.0, 1.0);\n"
-    "}\n";
-
-const auto FRAGMENT_SHADER_SOURCE = 
-    "#version 330 core\n"
-    "out vec4 color;\n"
-    "void main()\n"
-    "{\n"
-    "    color = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-    "}\n";
 
 void onKeyUpdate(GLFWwindow* window, int key, int code, int action, int mode);
 
@@ -48,6 +33,41 @@ int main(int argc, char const *argv[])
     glewExperimental = GL_TRUE;
     glewInit();
 
+    auto vertexShaderSource   = "";
+    auto fragmentShaderSource = "";
+
+    std::ifstream file;
+
+    file.open("res/triangle/vertex.glsl");
+    if (file.is_open()) {
+        file.seekg(0, std::ios::end);
+        auto size = file.tellg();
+        std::string buffer(size, ' ');
+        file.seekg(0);
+        file.read(&buffer[0], size);
+        vertexShaderSource = buffer.c_str();
+    } else {
+        std::cout << "[error]: Vertex shader file is not available.\n";
+        glfwTerminate();
+        return -1;
+    }
+    file.close();
+
+    file.open("res/triangle/fragment.glsl");
+    if (file.is_open()) {
+        file.seekg(0, std::ios::end);
+        auto size = file.tellg();
+        std::string buffer(size, ' ');
+        file.seekg(0);
+        file.read(&buffer[0], size);
+        fragmentShaderSource = buffer.c_str();
+    } else {
+        std::cout << "[error]: Fragment shader file is not available.\n";
+        glfwTerminate();
+        return -1;
+    }
+    file.close();
+
     GLfloat vertices[] = {
        -0.5f, -0.5f,
         0.5f, -0.5f,
@@ -61,7 +81,7 @@ int main(int argc, char const *argv[])
     glGenVertexArrays(1, &vao);
 
     auto vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &VERTEX_SHADER_SOURCE, nullptr);
+    glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);
     glCompileShader(vertexShader);
 
     {
@@ -73,11 +93,13 @@ int main(int argc, char const *argv[])
             glGetShaderInfoLog(vertexShader, 512, nullptr, infoLog);
             std::cout << "[error]: Vertex shader failed to compile.\n";
             std::cout << infoLog << "\n";
+            glfwTerminate();
+            return -1;
         }
     }
 
     auto fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &FRAGMENT_SHADER_SOURCE, nullptr);
+    glShaderSource(fragmentShader, 1, &fragmentShaderSource, nullptr);
     glCompileShader(fragmentShader);
 
     {
@@ -89,6 +111,8 @@ int main(int argc, char const *argv[])
             glGetShaderInfoLog(fragmentShader, 512, nullptr, infoLog);
             std::cout << "[error]: Fragment shader failed to compile.\n";
             std::cout << infoLog << "\n";
+            glfwTerminate();
+            return -1;
         }
     }
 
@@ -106,6 +130,8 @@ int main(int argc, char const *argv[])
             glGetShaderInfoLog(shaderProgram, 512, nullptr, infoLog);
             std::cout << "[error]: Shader program failed to compile.\n";
             std::cout << infoLog << "\n";
+            glfwTerminate();
+            return -1;
         }
     }
 
