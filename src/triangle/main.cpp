@@ -8,16 +8,23 @@ const auto WINDOW_WIDTH  = 800;
 const auto WINDOW_HEIGHT = 600;
 const auto WINDOW_TITLE  = "GL Cook Book - Creating a Triangle";
 
-void onKeyUpdate(GLFWwindow* window, int key, int code, int action, int mode);
+void updateKey(GLFWwindow* window, int key, int code, int action, int mode);
+void printShaderStatus(GLuint shader);
+GLuint makeShader(GLenum shaderType, std::string text);
+std::string makeString(std::string path);
 
 int main(int argc, char const *argv[])
 {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+
+    // GLEW has a bug for OS X where it still calls some legacy functions.
+    // We need this for now to prevent GLFW from crashing when legacy
+    // functions are called.
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
     auto window = glfwCreateWindow(
         WINDOW_WIDTH, 
@@ -27,52 +34,32 @@ int main(int argc, char const *argv[])
         nullptr);
 
     glfwMakeContextCurrent(window);
-    glfwSetKeyCallback(window, onKeyUpdate);
+    glfwSetKeyCallback(window, updateKey);
 
-    // Give access to modern GL functions
     glewExperimental = GL_TRUE;
     glewInit();
 
-    auto vertexShaderSource   = "";
-    auto fragmentShaderSource = "";
+    // OS X has a bug that does not normalise the viewport coordinates
+    // at all so only uncomment this when it's really needed since GLFW
+    // have a normalized default anyway.
+    // glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-    std::ifstream file;
+    auto vertexShaderPath = "res/triangle/vertex.glsl";
+    auto vertexShaderText = makeString(vertexShaderPath);
+    auto vertexShader = makeShader(GL_VERTEX_SHADER, vertexShaderText);
+    printShaderStatus(vertexShader);
 
-    file.open("res/triangle/vertex.glsl");
-    if (file.is_open()) {
-        file.seekg(0, std::ios::end);
-        auto size = file.tellg();
-        std::string buffer(size, ' ');
-        file.seekg(0);
-        file.read(&buffer[0], size);
-        vertexShaderSource = buffer.c_str();
-    } else {
-        std::cout << "[error]: Vertex shader file is not available.\n";
-        glfwTerminate();
-        return -1;
-    }
-    file.close();
+    auto fragmentShaderPath = "res/triangle/fragment.glsl";
+    auto fragmentShaderText = makeString(fragmentShaderPath);
+    auto fragmentShader = makeShader(GL_FRAGMENT_SHADER, fragmentShaderText);
+    printShaderStatus(fragmentShader);
 
-    file.open("res/triangle/fragment.glsl");
-    if (file.is_open()) {
-        file.seekg(0, std::ios::end);
-        auto size = file.tellg();
-        std::string buffer(size, ' ');
-        file.seekg(0);
-        file.read(&buffer[0], size);
-        fragmentShaderSource = buffer.c_str();
-    } else {
-        std::cout << "[error]: Fragment shader file is not available.\n";
-        glfwTerminate();
-        return -1;
-    }
-    file.close();
-
-    GLfloat vertices[] = {
-       -0.5f, -0.5f,
-        0.5f, -0.5f,
-        0.0f,  0.5f
-    };
+    auto shaderProgram = glCreateProgram();
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glLinkProgram(shaderProgram);
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
 
     GLuint vbo;
     glGenBuffers(1, &vbo);
@@ -80,60 +67,11 @@ int main(int argc, char const *argv[])
     GLuint vao;
     glGenVertexArrays(1, &vao);
 
-    auto vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);
-    glCompileShader(vertexShader);
-
-    {
-        GLint success;
-        GLchar infoLog[512];
-        glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-
-        if (! success) {
-            glGetShaderInfoLog(vertexShader, 512, nullptr, infoLog);
-            std::cout << "[error]: Vertex shader failed to compile.\n";
-            std::cout << infoLog << "\n";
-            glfwTerminate();
-            return -1;
-        }
-    }
-
-    auto fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, nullptr);
-    glCompileShader(fragmentShader);
-
-    {
-        GLint success;
-        GLchar infoLog[512];
-        glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-
-        if (! success) {
-            glGetShaderInfoLog(fragmentShader, 512, nullptr, infoLog);
-            std::cout << "[error]: Fragment shader failed to compile.\n";
-            std::cout << infoLog << "\n";
-            glfwTerminate();
-            return -1;
-        }
-    }
-
-    auto shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-
-    {
-        GLint success;
-        GLchar infoLog[512];
-        glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-
-        if (! success) {
-            glGetShaderInfoLog(shaderProgram, 512, nullptr, infoLog);
-            std::cout << "[error]: Shader program failed to compile.\n";
-            std::cout << infoLog << "\n";
-            glfwTerminate();
-            return -1;
-        }
-    }
+    GLfloat vertices[] = {
+       -0.5f, -0.5f,
+        0.5f, -0.5f,
+        0.0f,  0.5f
+    };
 
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -154,22 +92,61 @@ int main(int argc, char const *argv[])
         glBindVertexArray(vao);
         glDrawArrays(GL_TRIANGLES, 0, 3);
         glBindVertexArray(0);
-        glDisableVertexAttribArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         glfwSwapBuffers(window);
     }
 
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
     glDeleteProgram(shaderProgram);
     glfwTerminate();
     return 0;
 }
 
-void onKeyUpdate(GLFWwindow* window, int key, int code, int action, int mode)
+void updateKey(GLFWwindow* window, int key, int code, int action, int mode)
 {
     if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, GL_TRUE);
     }
+}
+
+void printShaderStatus(GLuint shader)
+{
+    GLint success;
+    GLchar infoLog[512];
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+
+    if (! success) {
+        glGetShaderInfoLog(shader, 512, nullptr, infoLog);
+        std::cout << infoLog << "\n";
+    }
+}
+
+GLuint makeShader(GLenum shaderType, std::string text)
+{
+    auto shader = glCreateShader(shaderType);
+    auto cstring = text.c_str();
+    glShaderSource(shader, 1, &cstring, nullptr);
+    glCompileShader(shader);
+    return shader;
+}
+
+std::string makeString(std::string path)
+{
+    std::ifstream file(path);
+
+    try 
+    {
+        file.exceptions(std::ifstream::failbit);
+    }
+    catch (const std::ios_base::failure& err) 
+    {
+        throw std::ios_base::failure(path + " is not available.");
+    }
+
+    file.seekg(0, std::ios::end);
+    auto size = file.tellg();
+    std::string buffer(size, ' ');
+    file.seekg(0);
+    file.read(&buffer[0], size);
+    file.close();
+    return buffer;
 }

@@ -1,3 +1,21 @@
+newaction {
+    trigger     = "setup",
+    description = "Setup resource files within generated files.",
+    execute     = function ()
+        if os.is("macosx") or os.is("linux") then
+            local base = path.getabsolute(".")
+            local res  = base .. "/res"
+            local rel  = base .. "/out/release"
+            local deb  = base .. "/out/debug"
+
+            os.mkdir(rel)
+            os.mkdir(deb)
+            os.execute(table.concat({"cp -r", res, deb}, " "))
+            os.execute(table.concat({"cp -r", res, rel}, " "))
+        end
+   end
+}
+
 solution "glcookbook"
     configurations {"Debug", "Release"}
         language "C++"
@@ -33,12 +51,14 @@ solution "glcookbook"
         objdir "out/release/obj"
         targetdir "out/release"
         kind "WindowedApp"
+        flags {"OptimizeSpeed"}
 
     configuration "Debug"
         defines {"DEBUG"}
         targetdir "out/debug"
         objdir "out/debug/obj"
         kind "ConsoleApp"
+        flags {"Symbols"}
 
     project "window_creation"
         location "build/window_creation"
@@ -54,11 +74,13 @@ solution "glcookbook"
             "src/triangle/**.h"
         }
 
-    configuration {"macosx"}
+    configuration {"not windows"}
         local base = path.getabsolute(".")
         local res  = base .. "/res"
         local rel  = base .. "/out/release"
         local deb  = base .. "/out/debug"
 
-        postbuildcommands(table.concat({"cp -r", res, rel}, " "))
+        os.mkdir(rel)
+        os.mkdir(deb)
         postbuildcommands(table.concat({"cp -r", res, deb}, " "))
+        postbuildcommands(table.concat({"cp -r", res, rel}, " "))
