@@ -63,7 +63,7 @@ solution "glcookbook"
     project "window_creation"
         location "build/window_creation"
         files {
-            "src/window_creation/**.cpp", 
+            "src/window_creation/**.cpp",
             "src/window_creation/**.h"
         }
 
@@ -73,14 +73,3 @@ solution "glcookbook"
             "src/triangle/**.cpp",
             "src/triangle/**.h"
         }
-
-    configuration {"not windows"}
-        local base = path.getabsolute(".")
-        local res  = base .. "/res"
-        local rel  = base .. "/out/release"
-        local deb  = base .. "/out/debug"
-
-        os.mkdir(rel)
-        os.mkdir(deb)
-        postbuildcommands(table.concat({"cp -r", res, deb}, " "))
-        postbuildcommands(table.concat({"cp -r", res, rel}, " "))
