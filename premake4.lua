@@ -46,6 +46,20 @@ solution "glcookbook"
             "CoreVideo.framework"
         }
 
+    configuration {"linux"}
+        links {
+            "glfw3",
+            "GLEW",
+            "GL",
+            "X11",
+            "Xxf86vm",
+            "Xrandr",
+            "Xinerama",
+            "Xi",
+            "Xcursor",
+            "pthread"
+        }
+
     configuration "Release"
         defines {"NDEBUG"}
         objdir "out/release/obj"
