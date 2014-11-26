@@ -4,14 +4,18 @@
 #include <iostream>
 #include <fstream>
 
+using std::string;
+using std::ifstream;
+using std::ios_base;
+
 const auto WINDOW_WIDTH  = 800;
 const auto WINDOW_HEIGHT = 600;
 const auto WINDOW_TITLE  = "GL Cook Book - Creating a Triangle";
 
 void updateKey(GLFWwindow* window, int key, int code, int action, int mode);
 void printShaderStatus(GLuint shader);
-GLuint makeShader(GLenum shaderType, std::string text);
-std::string makeString(std::string path);
+GLuint makeShader(GLenum shaderType, string text);
+string makeString(string path);
 
 int main(int argc, char const *argv[])
 {
@@ -27,10 +31,10 @@ int main(int argc, char const *argv[])
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
     auto window = glfwCreateWindow(
-        WINDOW_WIDTH, 
-        WINDOW_HEIGHT, 
-        WINDOW_TITLE, 
-        nullptr, 
+        WINDOW_WIDTH,
+        WINDOW_HEIGHT,
+        WINDOW_TITLE,
+        nullptr,
         nullptr);
 
     glfwMakeContextCurrent(window);
@@ -82,7 +86,7 @@ int main(int argc, char const *argv[])
     glDisableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    while (! glfwWindowShouldClose(window)) 
+    while (! glfwWindowShouldClose(window))
     {
         glfwPollEvents();
 
@@ -120,7 +124,7 @@ void printShaderStatus(GLuint shader)
     }
 }
 
-GLuint makeShader(GLenum shaderType, std::string text)
+GLuint makeShader(GLenum shaderType, string text)
 {
     auto shader = glCreateShader(shaderType);
     auto cstring = text.c_str();
@@ -129,22 +133,22 @@ GLuint makeShader(GLenum shaderType, std::string text)
     return shader;
 }
 
-std::string makeString(std::string path)
+string makeString(string path)
 {
-    std::ifstream file(path);
+    ifstream file(path);
 
-    try 
+    try
     {
-        file.exceptions(std::ifstream::failbit);
+        file.exceptions(ifstream::failbit);
     }
-    catch (const std::ios_base::failure& err) 
+    catch (const ios_base::failure& err)
     {
-        throw std::ios_base::failure(path + " is not available.");
+        throw ios_base::failure(path + " is not available.");
     }
 
     file.seekg(0, std::ios::end);
     auto size = file.tellg();
-    std::string buffer(size, ' ');
+    string buffer(size, ' ');
     file.seekg(0);
     file.read(&buffer[0], size);
     file.close();
