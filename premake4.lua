@@ -94,3 +94,10 @@ solution "glcookbook"
             "src/rectangle/**.cpp",
             "src/rectangle/**.h"
         }
+
+    project "basic_shader"
+        location "build/basic_shader"
+        files {
+            "src/basic_shader/**.cpp",
+            "src/basic_shader/**.h"
+        }
