@@ -87,3 +87,10 @@ solution "glcookbook"
             "src/triangle/**.cpp",
             "src/triangle/**.h"
         }
+
+    project "rectangle"
+        location "build/rectangle"
+        files {
+            "src/rectangle/**.cpp",
+            "src/rectangle/**.h"
+        }
