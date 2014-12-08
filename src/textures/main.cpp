@@ -4,7 +4,9 @@
 
 #include <iostream>
 #include <fstream>
+#include <vector>
 
+using std::vector;
 using std::string;
 using std::ifstream;
 using std::ios_base;
@@ -16,6 +18,10 @@ const auto WINDOW_TITLE  = "GL Cook Book - Loading Textures.";
 void updateKey(GLFWwindow* window, int key, int code, int action, int mode);
 void printShaderStatus(GLuint shader);
 GLuint makeShader(GLenum shaderType, string text);
+GLuint makeVertexShader(string path);
+GLuint makeFragmentShader(string path);
+GLuint makeShaderProgram(vector<GLuint> shaders);
+GLuint makeTexture(string path);
 string makeString(string path);
 
 int main(int argc, char const *argv[])
@@ -50,18 +56,14 @@ int main(int argc, char const *argv[])
     // glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
     auto vertexShaderPath = "res/textures/vertex.glsl";
-    auto vertexShaderText = makeString(vertexShaderPath);
-    auto vertexShader = makeShader(GL_VERTEX_SHADER, vertexShaderText);
+    auto vertexShader = makeVertexShader(vertexShaderPath);
     printShaderStatus(vertexShader);
 
     auto fragmentShaderPath = "res/textures/fragment.glsl";
-    auto fragmentShaderText = makeString(fragmentShaderPath);
-    auto fragmentShader = makeShader(GL_FRAGMENT_SHADER, fragmentShaderText);
+    auto fragmentShader = makeFragmentShader(fragmentShaderPath);
     printShaderStatus(fragmentShader);
 
-    auto shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
+    auto shaderProgram = makeShaderProgram({vertexShader, fragmentShader});
     glLinkProgram(shaderProgram);
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
@@ -71,12 +73,6 @@ int main(int argc, char const *argv[])
 
     GLuint vao;
     glGenVertexArrays(1, &vao);
-
-    GLuint tex1;
-    glGenTextures(1, &tex1);
-
-    GLuint tex2;
-    glGenTextures(1, &tex2);
 
     GLuint ebo;
     glGenBuffers(1, &ebo);
@@ -89,31 +85,10 @@ int main(int argc, char const *argv[])
        -0.5f, 0.5f,     1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // Top Left
     };
 
-    GLuint indices[] = {
+    GLuint ind[] = {
         2, 3, 0,
         0, 1, 2
     };
-
-    // Setup Texture Settings
-    fipImage container;
-    container.load("res/images/container.jpg");
-    container.convertTo32Bits();
-
-    fipImage awesomeface;
-    awesomeface.load("res/images/awesomeface.png");
-    awesomeface.convertTo32Bits();
-
-    auto containerTexData = container.accessPixels();
-    auto containerTexWidth = container.getWidth();
-    auto containerTexHeight = container.getHeight();
-
-
-    auto awesomefaceTexData = awesomeface.accessPixels();
-    auto awesomefaceTexWidth = awesomeface.getWidth();
-    auto awesomefaceTexHeight = awesomeface.getHeight();
-
-    auto minSetting = GL_LINEAR_MIPMAP_LINEAR;
-    auto magSetting = GL_LINEAR;
 
     glBindVertexArray(vao);
 
@@ -121,19 +96,10 @@ int main(int argc, char const *argv[])
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(ind), ind, GL_STATIC_DRAW);
 
-    glBindTexture(GL_TEXTURE_2D, tex1);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, containerTexWidth, containerTexHeight, 0, GL_BGRA, GL_UNSIGNED_BYTE, containerTexData);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minSetting);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magSetting);
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    glBindTexture(GL_TEXTURE_2D, tex2);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, awesomefaceTexWidth, awesomefaceTexHeight, 0, GL_BGRA, GL_UNSIGNED_BYTE, awesomefaceTexData);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minSetting);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magSetting);
-    glGenerateMipmap(GL_TEXTURE_2D);
+    GLuint tex1 = makeTexture("res/images/container.jpg");
+    GLuint tex2 = makeTexture("res/images/awesomeface.png");
 
     auto stride = sizeof(GLfloat) * 7;
     auto vertexOff = (GLvoid*)(0);
@@ -154,15 +120,13 @@ int main(int argc, char const *argv[])
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    container.clear();
-    awesomeface.clear();
-
     while (! glfwWindowShouldClose(window))
     {
         glfwPollEvents();
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+
         glUseProgram(shaderProgram);
 
         glActiveTexture(GL_TEXTURE0);
@@ -211,6 +175,55 @@ GLuint makeShader(GLenum shaderType, string text)
     glShaderSource(shader, 1, &cstring, nullptr);
     glCompileShader(shader);
     return shader;
+}
+
+GLuint makeVertexShader(string path)
+{
+    return makeShader(GL_VERTEX_SHADER, makeString(path));
+}
+
+GLuint makeFragmentShader(string path)
+{
+    return makeShader(GL_FRAGMENT_SHADER, makeString(path));
+}
+
+GLuint makeShaderProgram(vector<GLuint> shaders)
+{
+    GLuint program = glCreateProgram();
+
+    for (auto s : shaders)
+        glAttachShader(program, s);
+
+    glLinkProgram(program);
+
+    return program;
+}
+
+GLuint makeTexture(string path)
+{
+    GLuint id;
+    glGenTextures(1, &id);
+
+    fipImage image;
+    image.load(path.c_str());
+    image.convertTo32Bits();
+
+    auto data = image.accessPixels();
+    auto w = image.getWidth();
+    auto h = image.getHeight();
+
+    auto minSetting = GL_LINEAR_MIPMAP_LINEAR;
+    auto magSetting = GL_LINEAR;
+
+    glBindTexture(GL_TEXTURE_2D,id);
+    glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,w,h,0,GL_BGRA,GL_UNSIGNED_BYTE,data);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,minSetting);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,magSetting);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    image.clear();
+
+    return id;
 }
 
 string makeString(string path)
