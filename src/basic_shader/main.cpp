@@ -19,6 +19,8 @@ const auto WINDOW_TITLE  = "GL Cook Book - Creating a Triangle";
 void updateKey(GLFWwindow* window, int key, int code, int action, int mode);
 void printShaderStatus(GLuint shader);
 GLuint makeShader(GLenum shaderType, string text);
+GLuint makeVertex(string path);
+GLuint makeFrag(string path);
 string makeString(string path);
 
 int main(int argc, char const *argv[])
@@ -76,9 +78,9 @@ int main(int argc, char const *argv[])
     glGenVertexArrays(1, &vao);
 
     GLfloat vertices[] = {
-       -0.5f, -0.5f,     1.0f, 0.0f, 0.0f,
-        0.5f, -0.5f,     0.0f, 1.0f, 0.0f,
-        0.0f,  0.5f,     0.0f, 0.0f, 1.0f
+       -0.5f,  0.5f,     1.0f, 0.0f, 0.0f,
+        0.5f,  0.5f,     0.0f, 1.0f, 0.0f,
+        0.0f, -0.5f,     0.0f, 0.0f, 1.0f
     };
 
     glBindVertexArray(vao);
@@ -103,6 +105,7 @@ int main(int argc, char const *argv[])
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(shaderProgram);
+        glUniform1f(glGetUniformLocation(shaderProgram, "offset"), 0.5f);
         glBindVertexArray(vao);
         glDrawArrays(GL_TRIANGLES, 0, 3);
         glBindVertexArray(0);
