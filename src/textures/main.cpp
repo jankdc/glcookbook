@@ -79,10 +79,10 @@ int main(int argc, char const *argv[])
 
     GLfloat vertices[] = {
         // Positions    // Colors           // Texture Coords
-        0.5f, 0.5f,     1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // Top Right
-        0.5f, -0.5f,    0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // Bottom Right
+        0.5f, 0.5f,     1.0f, 0.0f, 0.0f,   2.0f, 2.0f, // Top Right
+        0.5f, -0.5f,    0.0f, 1.0f, 0.0f,   2.0f, 0.0f, // Bottom Right
        -0.5f, -0.5f,    0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // Bottom Left
-       -0.5f, 0.5f,     1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // Top Left
+       -0.5f, 0.5f,     1.0f, 1.0f, 0.0f,   0.0f, 2.0f  // Top Left
     };
 
     GLuint ind[] = {
@@ -100,6 +100,7 @@ int main(int argc, char const *argv[])
 
     GLuint tex1 = makeTexture("res/images/container.jpg");
     GLuint tex2 = makeTexture("res/images/awesomeface.png");
+
 
     auto stride = sizeof(GLfloat) * 7;
     auto vertexOff = (GLvoid*)(0);
@@ -131,10 +132,14 @@ int main(int argc, char const *argv[])
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, tex1);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glUniform1i(glGetUniformLocation(shaderProgram, "ourTexture1"), 0);
 
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, tex2);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glUniform1i(glGetUniformLocation(shaderProgram, "ourTexture2"), 1);
 
         glBindVertexArray(vao);
