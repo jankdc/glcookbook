@@ -27,7 +27,12 @@ solution "glcookbook"
 
         libdirs {
             os.findlib("glfw3"),
-            os.findlib("glew")
+            os.findlib("glew"),
+            os.findlib("freeimageplus")
+        }
+
+        links {
+            "freeimageplus"
         }
 
     configuration {"gmake"}
