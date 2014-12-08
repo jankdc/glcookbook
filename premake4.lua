@@ -101,3 +101,10 @@ solution "glcookbook"
             "src/basic_shader/**.cpp",
             "src/basic_shader/**.h"
         }
+
+    project "textures"
+        location "build/textures"
+        files {
+            "src/textures/**.cpp",
+            "src/textures/**.h"
+        }
