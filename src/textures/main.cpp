@@ -1,5 +1,6 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <FreeImagePlus.h>
 
 #include <iostream>
 #include <fstream>
@@ -71,20 +72,70 @@ int main(int argc, char const *argv[])
     GLuint vao;
     glGenVertexArrays(1, &vao);
 
+    GLuint tex;
+    glGenTextures(1, &tex);
+
+    GLuint ebo;
+    glGenBuffers(1, &ebo);
+
     GLfloat vertices[] = {
-       -0.5f, -0.5f,
-        0.5f, -0.5f,
-        0.0f,  0.5f
+        // Positions    // Colors           // Texture Coords
+        0.5f, 0.5f,     1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // Top Right
+        0.5f, -0.5f,    0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // Bottom Right
+       -0.5f, -0.5f,    0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // Bottom Left
+       -0.5f, 0.5f,     1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // Top Left
     };
 
+    GLuint indices[] = {
+        2, 3, 0,
+        0, 1, 2
+    };
+
+    // Setup Texture Settings
+    fipImage img;
+    img.load("res/images/container.jpg");
+    img.convertTo32Bits();
+
+    auto texData = img.accessPixels();
+    auto texWidth = img.getWidth();
+    auto texHeight = img.getHeight();
+    auto minSetting = GL_LINEAR_MIPMAP_LINEAR;
+    auto magSetting = GL_LINEAR;
+
     glBindVertexArray(vao);
+
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texWidth, texHeight, 0, GL_BGRA, GL_UNSIGNED_BYTE, texData);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minSetting);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magSetting);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    auto stride = sizeof(GLfloat) * 7;
+    auto vertexOff = (GLvoid*)(0);
+    auto colorOff = (GLvoid*)(sizeof(GLfloat) * 2);
+    auto texOff = (GLvoid*)(sizeof(GLfloat) * 5);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, stride, vertexOff);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, colorOff);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride, texOff);
+
     glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
     glBindVertexArray(0);
+
     glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(2);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    img.clear();
 
     while (! glfwWindowShouldClose(window))
     {
@@ -93,8 +144,9 @@ int main(int argc, char const *argv[])
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         glUseProgram(shaderProgram);
+        glBindTexture(GL_TEXTURE_2D, tex);
         glBindVertexArray(vao);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
 
         glfwSwapBuffers(window);
