@@ -113,3 +113,10 @@ solution "glcookbook"
             "src/textures/**.cpp",
             "src/textures/**.h"
         }
+
+    project "transform"
+        location "build/transform"
+        files {
+            "src/transform/**.cpp",
+            "src/transform/**.h"
+        }
