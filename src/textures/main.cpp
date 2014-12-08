@@ -72,8 +72,11 @@ int main(int argc, char const *argv[])
     GLuint vao;
     glGenVertexArrays(1, &vao);
 
-    GLuint tex;
-    glGenTextures(1, &tex);
+    GLuint tex1;
+    glGenTextures(1, &tex1);
+
+    GLuint tex2;
+    glGenTextures(1, &tex2);
 
     GLuint ebo;
     glGenBuffers(1, &ebo);
@@ -92,13 +95,23 @@ int main(int argc, char const *argv[])
     };
 
     // Setup Texture Settings
-    fipImage img;
-    img.load("res/images/container.jpg");
-    img.convertTo32Bits();
+    fipImage container;
+    container.load("res/images/container.jpg");
+    container.convertTo32Bits();
 
-    auto texData = img.accessPixels();
-    auto texWidth = img.getWidth();
-    auto texHeight = img.getHeight();
+    fipImage awesomeface;
+    awesomeface.load("res/images/awesomeface.png");
+    awesomeface.convertTo32Bits();
+
+    auto containerTexData = container.accessPixels();
+    auto containerTexWidth = container.getWidth();
+    auto containerTexHeight = container.getHeight();
+
+
+    auto awesomefaceTexData = awesomeface.accessPixels();
+    auto awesomefaceTexWidth = awesomeface.getWidth();
+    auto awesomefaceTexHeight = awesomeface.getHeight();
+
     auto minSetting = GL_LINEAR_MIPMAP_LINEAR;
     auto magSetting = GL_LINEAR;
 
@@ -110,8 +123,14 @@ int main(int argc, char const *argv[])
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    glBindTexture(GL_TEXTURE_2D, tex);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texWidth, texHeight, 0, GL_BGRA, GL_UNSIGNED_BYTE, texData);
+    glBindTexture(GL_TEXTURE_2D, tex1);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, containerTexWidth, containerTexHeight, 0, GL_BGRA, GL_UNSIGNED_BYTE, containerTexData);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minSetting);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magSetting);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    glBindTexture(GL_TEXTURE_2D, tex2);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, awesomefaceTexWidth, awesomefaceTexHeight, 0, GL_BGRA, GL_UNSIGNED_BYTE, awesomefaceTexData);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minSetting);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magSetting);
     glGenerateMipmap(GL_TEXTURE_2D);
@@ -135,7 +154,8 @@ int main(int argc, char const *argv[])
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    img.clear();
+    container.clear();
+    awesomeface.clear();
 
     while (! glfwWindowShouldClose(window))
     {
@@ -144,7 +164,15 @@ int main(int argc, char const *argv[])
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         glUseProgram(shaderProgram);
-        glBindTexture(GL_TEXTURE_2D, tex);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, tex1);
+        glUniform1i(glGetUniformLocation(shaderProgram, "ourTexture1"), 0);
+
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, tex2);
+        glUniform1i(glGetUniformLocation(shaderProgram, "ourTexture2"), 1);
+
         glBindVertexArray(vao);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
