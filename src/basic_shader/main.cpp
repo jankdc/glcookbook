@@ -19,8 +19,6 @@ const auto WINDOW_TITLE  = "GL Cook Book - Playing with Shaders.";
 void updateKey(GLFWwindow* window, int key, int code, int action, int mode);
 void printShaderStatus(GLuint shader);
 GLuint makeShader(GLenum shaderType, string text);
-GLuint makeVertex(string path);
-GLuint makeFrag(string path);
 string makeString(string path);
 
 int main(int argc, char const *argv[])
