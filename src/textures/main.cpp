@@ -48,12 +48,12 @@ int main(int argc, char const *argv[])
     // have a normalized default anyway.
     // glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-    auto vertexShaderPath = "res/triangle/vertex.glsl";
+    auto vertexShaderPath = "res/textures/vertex.glsl";
     auto vertexShaderText = makeString(vertexShaderPath);
     auto vertexShader = makeShader(GL_VERTEX_SHADER, vertexShaderText);
     printShaderStatus(vertexShader);
 
-    auto fragmentShaderPath = "res/triangle/fragment.glsl";
+    auto fragmentShaderPath = "res/textures/fragment.glsl";
     auto fragmentShaderText = makeString(fragmentShaderPath);
     auto fragmentShader = makeShader(GL_FRAGMENT_SHADER, fragmentShaderText);
     printShaderStatus(fragmentShader);
