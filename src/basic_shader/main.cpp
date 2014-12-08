@@ -14,7 +14,7 @@ using std::ios_base;
 
 const auto WINDOW_WIDTH  = 800;
 const auto WINDOW_HEIGHT = 600;
-const auto WINDOW_TITLE  = "GL Cook Book - Creating a Triangle";
+const auto WINDOW_TITLE  = "GL Cook Book - Playing with Shaders.";
 
 void updateKey(GLFWwindow* window, int key, int code, int action, int mode);
 void printShaderStatus(GLuint shader);
