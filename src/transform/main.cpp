@@ -2,14 +2,23 @@
 #include <GLFW/glfw3.h>
 #include <FreeImagePlus.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include <iostream>
 #include <fstream>
 #include <vector>
 
+using std::cout;
 using std::vector;
 using std::string;
 using std::ifstream;
 using std::ios_base;
+
+using glm::vec4;
+using glm::mat4;
+using glm::translate;
 
 const auto WINDOW_WIDTH  = 800;
 const auto WINDOW_HEIGHT = 600;
@@ -17,6 +26,7 @@ const auto WINDOW_TITLE  = "GL Cook Book - Loading Textures.";
 
 void updateKey(GLFWwindow* window, int key, int code, int action, int mode);
 void printShaderStatus(GLuint shader);
+GLuint makeMesh(vector<GLfloat> vertices, vector<GLuint> ids);
 GLuint makeShader(GLenum shaderType, string text);
 GLuint makeVertexShader(string path);
 GLuint makeFragmentShader(string path);
@@ -63,21 +73,9 @@ int main(int argc, char const *argv[])
     auto fragmentShader = makeFragmentShader(fragmentShaderPath);
     printShaderStatus(fragmentShader);
 
-    auto shaderProgram = makeShaderProgram({vertexShader, fragmentShader});
-    glLinkProgram(shaderProgram);
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+    auto program = makeShaderProgram({vertexShader, fragmentShader});
 
-    GLuint vbo;
-    glGenBuffers(1, &vbo);
-
-    GLuint vao;
-    glGenVertexArrays(1, &vao);
-
-    GLuint ebo;
-    glGenBuffers(1, &ebo);
-
-    GLfloat vertices[] = {
+    vector<GLfloat> vertices = {
         // Positions    // Colors           // Texture Coords
         0.5f, 0.5f,     1.0f, 0.0f, 0.0f,   2.0f, 2.0f, // Top Right
         0.5f, -0.5f,    0.0f, 1.0f, 0.0f,   2.0f, 0.0f, // Bottom Right
@@ -85,41 +83,17 @@ int main(int argc, char const *argv[])
        -0.5f, 0.5f,     1.0f, 1.0f, 0.0f,   0.0f, 2.0f  // Top Left
     };
 
-    GLuint ind[] = {
+    vector<GLuint> ids = {
         2, 3, 0,
         0, 1, 2
     };
 
-    glBindVertexArray(vao);
+    auto vao = makeMesh(vertices, ids);
+    auto tex1 = makeTexture("res/images/container.jpg");
+    auto tex2 = makeTexture("res/images/awesomeface.png");
 
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(ind), ind, GL_STATIC_DRAW);
-
-    GLuint tex1 = makeTexture("res/images/container.jpg");
-    GLuint tex2 = makeTexture("res/images/awesomeface.png");
-
-
-    auto stride = sizeof(GLfloat) * 7;
-    auto vertexOff = (GLvoid*)(0);
-    auto colorOff = (GLvoid*)(sizeof(GLfloat) * 2);
-    auto texOff = (GLvoid*)(sizeof(GLfloat) * 5);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, stride, vertexOff);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, colorOff);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride, texOff);
-
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glEnableVertexAttribArray(2);
-    glBindVertexArray(0);
-
-    glDisableVertexAttribArray(0);
-    glDisableVertexAttribArray(1);
-    glDisableVertexAttribArray(2);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
 
     while (! glfwWindowShouldClose(window))
     {
@@ -128,28 +102,24 @@ int main(int argc, char const *argv[])
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glUseProgram(shaderProgram);
+        glUseProgram(program);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, tex1);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glUniform1i(glGetUniformLocation(shaderProgram, "ourTexture1"), 0);
+        glUniform1i(glGetUniformLocation(program, "ourTexture1"), 0);
 
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, tex2);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glUniform1i(glGetUniformLocation(shaderProgram, "ourTexture2"), 1);
+        glUniform1i(glGetUniformLocation(program, "ourTexture2"), 1);
 
         glBindVertexArray(vao);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, ids.size(), GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
 
         glfwSwapBuffers(window);
     }
 
-    glDeleteProgram(shaderProgram);
+    glDeleteProgram(program);
     glfwTerminate();
     return 0;
 }
@@ -229,6 +199,52 @@ GLuint makeTexture(string path)
     image.clear();
 
     return id;
+}
+
+GLuint makeMesh(vector<GLfloat> vertices, vector<GLuint> ids)
+{
+    GLuint vbo;
+    glGenBuffers(1, &vbo);
+
+    GLuint vao;
+    glGenVertexArrays(1, &vao);
+
+    GLuint ebo;
+    glGenBuffers(1, &ebo);
+
+    glBindVertexArray(vao);
+
+    auto vtSize = vertices.size() * sizeof(GLfloat);
+    auto vtData = vertices.data();
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, vtSize, vtData, GL_STATIC_DRAW);
+
+    auto idSize = ids.size() * sizeof(GLuint);
+    auto idData = ids.data();
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, idSize, idData, GL_STATIC_DRAW);
+
+    auto stride = sizeof(GLfloat) * 7;
+    auto vertexOff = (GLvoid*)(0);
+    auto colorOff = (GLvoid*)(sizeof(GLfloat) * 2);
+    auto texOff = (GLvoid*)(sizeof(GLfloat) * 5);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, stride, vertexOff);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, colorOff);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride, texOff);
+
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
+
+    glBindVertexArray(0);
+
+    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(2);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    return vao;
 }
 
 string makeString(string path)
