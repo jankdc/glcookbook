@@ -16,9 +16,13 @@ using std::string;
 using std::ifstream;
 using std::ios_base;
 
+using glm::vec3;
 using glm::vec4;
 using glm::mat4;
 using glm::translate;
+using glm::rotate;
+using glm::scale;
+using glm::value_ptr;
 
 const auto WINDOW_WIDTH  = 800;
 const auto WINDOW_HEIGHT = 600;
@@ -65,11 +69,11 @@ int main(int argc, char const *argv[])
     // have a normalized default anyway.
     // glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-    auto vertexShaderPath = "res/textures/vertex.glsl";
+    auto vertexShaderPath = "res/transform/vertex.glsl";
     auto vertexShader = makeVertexShader(vertexShaderPath);
     printShaderStatus(vertexShader);
 
-    auto fragmentShaderPath = "res/textures/fragment.glsl";
+    auto fragmentShaderPath = "res/transform/fragment.glsl";
     auto fragmentShader = makeFragmentShader(fragmentShaderPath);
     printShaderStatus(fragmentShader);
 
@@ -97,12 +101,22 @@ int main(int argc, char const *argv[])
 
     while (! glfwWindowShouldClose(window))
     {
+        auto curTime = static_cast<float>(glfwGetTime());
+
         glfwPollEvents();
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(program);
+
+        auto trans1 = mat4(1.0f);
+        trans1 = rotate(trans1, curTime * 100.0f, vec3(0.0f, 0.0f, 1.0f));
+        trans1 = scale(trans1, vec3(0.5f, 0.5f, 0.5f));
+        trans1 = translate(trans1, vec3(0.75f, -0.75f, 0.0f));
+
+        auto transformId = glGetUniformLocation(program, "transform");
+        glUniformMatrix4fv(transformId, 1, GL_FALSE, value_ptr(trans1));
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, tex1);
@@ -111,6 +125,17 @@ int main(int argc, char const *argv[])
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, tex2);
         glUniform1i(glGetUniformLocation(program, "ourTexture2"), 1);
+
+        glBindVertexArray(vao);
+        glDrawElements(GL_TRIANGLES, ids.size(), GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
+
+        auto trans2 = mat4(1.0f);
+        trans2 = rotate(trans2, curTime * 100.0f, vec3(0.0f, 0.0f, 1.0f));
+        trans2 = scale(trans2, vec3(0.5f, 0.5f, 0.5f));
+        trans2 = translate(trans2, vec3(-0.75f, 0.75f, 0.0f));
+
+        glUniformMatrix4fv(transformId, 1, GL_FALSE, value_ptr(trans2));
 
         glBindVertexArray(vao);
         glDrawElements(GL_TRIANGLES, ids.size(), GL_UNSIGNED_INT, 0);
