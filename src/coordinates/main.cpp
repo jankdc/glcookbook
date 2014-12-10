@@ -15,6 +15,7 @@ using std::vector;
 using std::string;
 using std::ifstream;
 using std::ios_base;
+using std::ios;
 
 using glm::vec3;
 using glm::vec4;
@@ -69,13 +70,13 @@ int main(int argc, char const *argv[])
     // have a normalized default anyway.
     // glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-    auto vertexShader = makeVShader("res/coordinates/vertex.glsl");
-    printShaderStatus(vertexShader);
+    auto vshader = makeVShader("res/coordinates/vertex.glsl");
+    printShaderStatus(vshader);
 
-    auto fragmentShader = makeFShader("res/coordinates/fragment.glsl");
-    printShaderStatus(fragmentShader);
+    auto fshader = makeFShader("res/coordinates/fragment.glsl");
+    printShaderStatus(fshader);
 
-    auto program = makeProgram({vertexShader, fragmentShader});
+    auto program = makeProgram({vshader, fshader});
 
     vector<GLfloat> vertices = {
         // Positions    // Colors           // Texture Coords
@@ -94,6 +95,16 @@ int main(int argc, char const *argv[])
     auto tex1 = makeTexture("res/images/container.jpg");
     auto tex2 = makeTexture("res/images/awesomeface.png");
 
+    glUseProgram(program);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, tex1);
+    glUniform1i(glGetUniformLocation(program, "ourTexture1"), 0);
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, tex2);
+    glUniform1i(glGetUniformLocation(program, "ourTexture2"), 1);
+    glUseProgram(0);
+
     while (! glfwWindowShouldClose(window))
     {
         auto curTime = static_cast<float>(glfwGetTime());
@@ -104,26 +115,17 @@ int main(int argc, char const *argv[])
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(program);
+        auto transformId = glGetUniformLocation(program, "transform");
+
+        glBindVertexArray(vao);
 
         auto trans1 = mat4(1.0f);
         trans1 = rotate(trans1, curTime * 100.0f, vec3(0.0f, 0.0f, 1.0f));
         trans1 = scale(trans1, vec3(0.5f, 0.5f, 0.5f));
         trans1 = translate(trans1, vec3(0.75f, -0.75f, 0.0f));
 
-        auto transformId = glGetUniformLocation(program, "transform");
         glUniformMatrix4fv(transformId, 1, GL_FALSE, value_ptr(trans1));
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, tex1);
-        glUniform1i(glGetUniformLocation(program, "ourTexture1"), 0);
-
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, tex2);
-        glUniform1i(glGetUniformLocation(program, "ourTexture2"), 1);
-
-        glBindVertexArray(vao);
         glDrawElements(GL_TRIANGLES, ids.size(), GL_UNSIGNED_INT, 0);
-        glBindVertexArray(0);
 
         auto trans2 = mat4(1.0f);
         trans2 = rotate(trans2, curTime * 100.0f, vec3(0.0f, 0.0f, 1.0f));
@@ -131,16 +133,15 @@ int main(int argc, char const *argv[])
         trans2 = translate(trans2, vec3(-0.75f, 0.75f, 0.0f));
 
         glUniformMatrix4fv(transformId, 1, GL_FALSE, value_ptr(trans2));
-
-        glBindVertexArray(vao);
         glDrawElements(GL_TRIANGLES, ids.size(), GL_UNSIGNED_INT, 0);
+
         glBindVertexArray(0);
 
         glfwSwapBuffers(window);
     }
 
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+    glDeleteShader(vshader);
+    glDeleteShader(fshader);
     glDeleteProgram(program);
     glfwTerminate();
 
@@ -286,7 +287,7 @@ string makeString(string path)
         throw ios_base::failure(path + " is not available.");
     }
 
-    file.seekg(0, std::ios::end);
+    file.seekg(0, ios::end);
     auto size = file.tellg();
     string buffer(size, ' ');
     file.seekg(0);
