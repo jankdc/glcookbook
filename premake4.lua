@@ -127,3 +127,10 @@ solution "glcookbook"
             "src/coordinates/**.cpp",
             "src/coordinates/**.h"
         }
+
+    project "camera"
+        location "build/camera"
+        files {
+            "src/camera/**.cpp",
+            "src/camera/**.h"
+        }
