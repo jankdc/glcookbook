@@ -162,6 +162,7 @@ int main(int argc, char const *argv[])
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glUseProgram(program);
+
         auto modelId = glGetUniformLocation(program, "model");
         auto viewId = glGetUniformLocation(program, "view");
         auto projId = glGetUniformLocation(program, "projection");
@@ -186,6 +187,8 @@ int main(int argc, char const *argv[])
             glDrawArrays(GL_TRIANGLES, 0, vertices.size());
         }
         glBindVertexArray(0);
+
+        glUseProgram(0);
 
         glfwSwapBuffers(window);
     }
