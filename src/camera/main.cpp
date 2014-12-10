@@ -25,6 +25,8 @@ using glm::rotate;
 using glm::scale;
 using glm::value_ptr;
 using glm::perspective;
+using glm::cross;
+using glm::lookAt;
 
 const auto WINDOW_WIDTH  = 800;
 const auto WINDOW_HEIGHT = 600;
@@ -167,9 +169,16 @@ int main(int argc, char const *argv[])
         auto viewId = glGetUniformLocation(program, "view");
         auto projId = glGetUniformLocation(program, "projection");
 
-        auto view = mat4(1.0f);
-        view = translate(view, vec3(0.0f, 0.0f, -10.0f));
+        auto radius = 10.0f;
+        auto cameraZ = cosf(curTime) * radius;
+        auto cameraX = sinf(curTime) * radius;
+        auto cameraPos = vec3(cameraX, 0.0f, cameraZ);
+        auto cameraTarget = vec3(0.0f, 0.0f, 0.0f);
+        auto cameraDirection = cameraPos - cameraTarget;
+        auto cameraRight = cross(vec3(0.0f, 1.0f, 0.0f), cameraDirection);
+        auto cameraUp = cross(cameraDirection, cameraRight);
 
+        auto view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
         auto proj = mat4(1.0f);
         auto ratio = static_cast<float>(WINDOW_WIDTH/WINDOW_HEIGHT);
         proj = perspective(45.0f, ratio, 0.1f, 1000.0f);
