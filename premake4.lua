@@ -120,3 +120,10 @@ solution "glcookbook"
             "src/transform/**.cpp",
             "src/transform/**.h"
         }
+
+    project "coordinates"
+        location "build/coordinates"
+        files {
+            "src/coordinates/**.cpp",
+            "src/coordinates/**.h"
+        }
