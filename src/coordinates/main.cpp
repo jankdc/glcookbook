@@ -24,6 +24,7 @@ using glm::translate;
 using glm::rotate;
 using glm::scale;
 using glm::value_ptr;
+using glm::perspective;
 
 const auto WINDOW_WIDTH  = 800;
 const auto WINDOW_HEIGHT = 600;
@@ -32,7 +33,7 @@ const auto WINDOW_TITLE  = "GL Cook Book - Playing with Coordinates.";
 void updateKey(GLFWwindow* window, int key, int code, int action, int mode);
 void printShaderStatus(GLuint shader);
 string makeString(string path);
-GLuint makeMesh(vector<GLfloat> vertices, vector<GLuint> ids);
+GLuint makeMesh(vector<GLfloat> vertices);
 GLuint makeShader(GLenum shaderType, string text);
 GLuint makeVShader(string path);
 GLuint makeFShader(string path);
@@ -65,6 +66,8 @@ int main(int argc, char const *argv[])
     glewExperimental = GL_TRUE;
     glewInit();
 
+    glEnable(GL_DEPTH_TEST);
+
     // OS X has a bug that does not normalise the viewport coordinates
     // at all so only uncomment this when it's really needed since GLFW
     // have a normalized default anyway.
@@ -79,19 +82,63 @@ int main(int argc, char const *argv[])
     auto program = makeProgram({vshader, fshader});
 
     vector<GLfloat> vertices = {
-        // Positions    // Colors           // Texture Coords
-        0.5f, 0.5f,     1.0f, 0.0f, 0.0f,   2.0f, 2.0f, // Top Right
-        0.5f, -0.5f,    0.0f, 1.0f, 0.0f,   2.0f, 0.0f, // Bottom Right
-       -0.5f, -0.5f,    0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // Bottom Left
-       -0.5f, 0.5f,     1.0f, 1.0f, 0.0f,   0.0f, 2.0f  // Top Left
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
     };
 
-    vector<GLuint> ids = {
-        2, 3, 0,
-        0, 1, 2
+    vector<vec3> cubePositions = {
+        vec3( 0.0f, 0.0f, 0.0f),
+        vec3( 2.0f, 5.0f,-15.0f),
+        vec3(-1.5f,-2.2f,-2.5f),
+        vec3(-3.8f,-2.0f,-12.3f),
+        vec3( 2.4f,-0.4f,-3.5f),
+        vec3(-1.7f, 3.0f,-7.5f),
+        vec3( 1.3f,-2.0f,-2.5f),
+        vec3( 1.5f, 2.0f,-2.5f),
+        vec3( 1.5f, 0.2f,-1.5f),
+        vec3(-1.3f, 1.0f,-1.5f)
     };
 
-    auto vao = makeMesh(vertices, ids);
+    auto vao = makeMesh(vertices);
     auto tex1 = makeTexture("res/images/container.jpg");
     auto tex2 = makeTexture("res/images/awesomeface.png");
 
@@ -112,29 +159,32 @@ int main(int argc, char const *argv[])
         glfwPollEvents();
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glUseProgram(program);
-        auto transformId = glGetUniformLocation(program, "transform");
+        auto modelId = glGetUniformLocation(program, "model");
+        auto viewId = glGetUniformLocation(program, "view");
+        auto projId = glGetUniformLocation(program, "projection");
+
+        auto view = mat4(1.0f);
+        view = translate(view, vec3(0.0f, 0.0f, -10.0f));
+
+        auto proj = mat4(1.0f);
+        auto ratio = static_cast<float>(WINDOW_WIDTH/WINDOW_HEIGHT);
+        proj = perspective(45.0f, ratio, 0.1f, 1000.0f);
+
+        glUniformMatrix4fv(viewId, 1, GL_FALSE, value_ptr(view));
+        glUniformMatrix4fv(projId, 1, GL_FALSE, value_ptr(proj));
 
         glBindVertexArray(vao);
-
-        auto trans1 = mat4(1.0f);
-        trans1 = rotate(trans1, curTime * 100.0f, vec3(0.0f, 0.0f, 1.0f));
-        trans1 = scale(trans1, vec3(0.5f, 0.5f, 0.5f));
-        trans1 = translate(trans1, vec3(0.75f, -0.75f, 0.0f));
-
-        glUniformMatrix4fv(transformId, 1, GL_FALSE, value_ptr(trans1));
-        glDrawElements(GL_TRIANGLES, ids.size(), GL_UNSIGNED_INT, 0);
-
-        auto trans2 = mat4(1.0f);
-        trans2 = rotate(trans2, curTime * 100.0f, vec3(0.0f, 0.0f, 1.0f));
-        trans2 = scale(trans2, vec3(0.5f, 0.5f, 0.5f));
-        trans2 = translate(trans2, vec3(-0.75f, 0.75f, 0.0f));
-
-        glUniformMatrix4fv(transformId, 1, GL_FALSE, value_ptr(trans2));
-        glDrawElements(GL_TRIANGLES, ids.size(), GL_UNSIGNED_INT, 0);
-
+        for (const auto& pos : cubePositions)
+        {
+            auto model = mat4(1.0f);
+            model = translate(model, pos);
+            model = rotate(model, curTime * -55.0f, vec3(1.0f, 0.3f, 0.5f));
+            glUniformMatrix4fv(modelId, 1, GL_FALSE, value_ptr(model));
+            glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+        }
         glBindVertexArray(0);
 
         glfwSwapBuffers(window);
@@ -228,16 +278,13 @@ GLuint makeTexture(string path)
     return id;
 }
 
-GLuint makeMesh(vector<GLfloat> vertices, vector<GLuint> ids)
+GLuint makeMesh(vector<GLfloat> vertices)
 {
     GLuint vbo;
     glGenBuffers(1, &vbo);
 
     GLuint vao;
     glGenVertexArrays(1, &vao);
-
-    GLuint ebo;
-    glGenBuffers(1, &ebo);
 
     glBindVertexArray(vao);
 
@@ -246,30 +293,20 @@ GLuint makeMesh(vector<GLfloat> vertices, vector<GLuint> ids)
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, vtSize, vtData, GL_STATIC_DRAW);
 
-    auto idSize = ids.size() * sizeof(GLuint);
-    auto idData = ids.data();
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, idSize, idData, GL_STATIC_DRAW);
-
-    auto stride = sizeof(GLfloat) * 7;
+    auto stride = sizeof(GLfloat) * 5;
     auto vertexOff = (GLvoid*)(0);
-    auto colorOff = (GLvoid*)(sizeof(GLfloat) * 2);
-    auto texOff = (GLvoid*)(sizeof(GLfloat) * 5);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, stride, vertexOff);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, colorOff);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride, texOff);
+    auto texOff = (GLvoid*)(sizeof(GLfloat) * 3);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, vertexOff);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, texOff);
 
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
-    glEnableVertexAttribArray(2);
 
     glBindVertexArray(0);
 
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
-    glDisableVertexAttribArray(2);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindTexture(GL_TEXTURE_2D, 0);
 
     return vao;
 }
