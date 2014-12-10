@@ -30,13 +30,13 @@ const auto WINDOW_TITLE  = "GL Cook Book - Playing with Coordinates.";
 
 void updateKey(GLFWwindow* window, int key, int code, int action, int mode);
 void printShaderStatus(GLuint shader);
+string makeString(string path);
 GLuint makeMesh(vector<GLfloat> vertices, vector<GLuint> ids);
 GLuint makeShader(GLenum shaderType, string text);
-GLuint makeVertexShader(string path);
-GLuint makeFragmentShader(string path);
-GLuint makeShaderProgram(vector<GLuint> shaders);
+GLuint makeVShader(string path);
+GLuint makeFShader(string path);
 GLuint makeTexture(string path);
-string makeString(string path);
+GLuint makeProgram(vector<GLuint> shaders);
 
 int main(int argc, char const *argv[])
 {
@@ -69,15 +69,13 @@ int main(int argc, char const *argv[])
     // have a normalized default anyway.
     // glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-    auto vertexShaderPath = "res/coordinates/vertex.glsl";
-    auto vertexShader = makeVertexShader(vertexShaderPath);
+    auto vertexShader = makeVShader("res/coordinates/vertex.glsl");
     printShaderStatus(vertexShader);
 
-    auto fragmentShaderPath = "res/coordinates/fragment.glsl";
-    auto fragmentShader = makeFragmentShader(fragmentShaderPath);
+    auto fragmentShader = makeFShader("res/coordinates/fragment.glsl");
     printShaderStatus(fragmentShader);
 
-    auto program = makeShaderProgram({vertexShader, fragmentShader});
+    auto program = makeProgram({vertexShader, fragmentShader});
 
     vector<GLfloat> vertices = {
         // Positions    // Colors           // Texture Coords
@@ -95,9 +93,6 @@ int main(int argc, char const *argv[])
     auto vao = makeMesh(vertices, ids);
     auto tex1 = makeTexture("res/images/container.jpg");
     auto tex2 = makeTexture("res/images/awesomeface.png");
-
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
 
     while (! glfwWindowShouldClose(window))
     {
@@ -144,8 +139,11 @@ int main(int argc, char const *argv[])
         glfwSwapBuffers(window);
     }
 
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
     glDeleteProgram(program);
     glfwTerminate();
+
     return 0;
 }
 
@@ -168,26 +166,29 @@ void printShaderStatus(GLuint shader)
     }
 }
 
-GLuint makeShader(GLenum shaderType, string text)
+GLuint makeVShader(string path)
 {
-    auto shader = glCreateShader(shaderType);
-    auto cstring = text.c_str();
-    glShaderSource(shader, 1, &cstring, nullptr);
+    auto shader = glCreateShader(GL_VERTEX_SHADER);
+    auto shaderText = makeString(path);
+    auto shaderRawText = shaderText.c_str();
+    glShaderSource(shader, 1, &shaderRawText, nullptr);
     glCompileShader(shader);
+
     return shader;
 }
 
-GLuint makeVertexShader(string path)
+GLuint makeFShader(string path)
 {
-    return makeShader(GL_VERTEX_SHADER, makeString(path));
+    auto shader = glCreateShader(GL_FRAGMENT_SHADER);
+    auto shaderText = makeString(path);
+    auto shaderRawText = shaderText.c_str();
+    glShaderSource(shader, 1, &shaderRawText, nullptr);
+    glCompileShader(shader);
+
+    return shader;
 }
 
-GLuint makeFragmentShader(string path)
-{
-    return makeShader(GL_FRAGMENT_SHADER, makeString(path));
-}
-
-GLuint makeShaderProgram(vector<GLuint> shaders)
+GLuint makeProgram(vector<GLuint> shaders)
 {
     GLuint program = glCreateProgram();
 
