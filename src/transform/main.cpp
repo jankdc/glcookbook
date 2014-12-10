@@ -26,7 +26,7 @@ using glm::value_ptr;
 
 const auto WINDOW_WIDTH  = 800;
 const auto WINDOW_HEIGHT = 600;
-const auto WINDOW_TITLE  = "GL Cook Book - Loading Textures.";
+const auto WINDOW_TITLE  = "GL Cook Book - Playing with Transformations.";
 
 void updateKey(GLFWwindow* window, int key, int code, int action, int mode);
 void printShaderStatus(GLuint shader);
