@@ -72,7 +72,7 @@ int main(int argc, char const *argv[])
     // OS X has a bug that does not normalise the viewport coordinates
     // at all so only uncomment this when it's really needed since GLFW
     // have a normalized default anyway.
-    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+    // glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
     auto vshader = makeVShader("res/coordinates/vertex.glsl");
     printShaderStatus(vshader);
