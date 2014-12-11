@@ -25,6 +25,7 @@ using glm::rotate;
 using glm::scale;
 using glm::value_ptr;
 using glm::perspective;
+using glm::radians;
 
 const auto WINDOW_WIDTH  = 800;
 const auto WINDOW_HEIGHT = 600;
@@ -71,7 +72,7 @@ int main(int argc, char const *argv[])
     // OS X has a bug that does not normalise the viewport coordinates
     // at all so only uncomment this when it's really needed since GLFW
     // have a normalized default anyway.
-    // glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
     auto vshader = makeVShader("res/coordinates/vertex.glsl");
     printShaderStatus(vshader);
@@ -182,7 +183,7 @@ int main(int argc, char const *argv[])
         {
             auto model = mat4(1.0f);
             model = translate(model, pos);
-            model = rotate(model, curTime * -55.0f, vec3(1.0f, 0.3f, 0.5f));
+            model = rotate(model, radians(curTime * -55.0f), vec3(1.0f, 0.3f, 0.5f));
             glUniformMatrix4fv(modelId, 1, GL_FALSE, value_ptr(model));
             glDrawArrays(GL_TRIANGLES, 0, vertices.size());
         }

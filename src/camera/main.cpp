@@ -27,6 +27,7 @@ using glm::value_ptr;
 using glm::perspective;
 using glm::cross;
 using glm::lookAt;
+using glm::radians;
 
 const auto WINDOW_WIDTH  = 800;
 const auto WINDOW_HEIGHT = 600;
@@ -194,7 +195,7 @@ int main(int argc, char const *argv[])
         {
             auto model = mat4(1.0f);
             model = translate(model, pos);
-            model = rotate(model, curTime * -55.0f, vec3(1.0f, 0.3f, 0.5f));
+            model = rotate(model, radians(curTime * -55.0f), vec3(1.0f, 0.3f, 0.5f));
             glUniformMatrix4fv(modelId, 1, GL_FALSE, value_ptr(model));
             glDrawArrays(GL_TRIANGLES, 0, vertices.size());
         }
