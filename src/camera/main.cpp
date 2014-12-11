@@ -33,6 +33,7 @@ const auto WINDOW_HEIGHT = 600;
 const auto WINDOW_TITLE  = "GL Cook Book - Playing with Camera.";
 
 void updateKey(GLFWwindow* window, int key, int code, int action, int mode);
+void printErr(int code, const char* desc);
 void printShaderStatus(GLuint shader);
 string makeString(string path);
 GLuint makeMesh(vector<GLfloat> vertices);
@@ -44,6 +45,8 @@ GLuint makeProgram(vector<GLuint> shaders);
 
 int main(int argc, char const *argv[])
 {
+    glfwSetErrorCallback(printErr);
+
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -215,6 +218,11 @@ void updateKey(GLFWwindow* window, int key, int code, int action, int mode)
     if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, GL_TRUE);
     }
+}
+
+void printErr(int code, const char* desc)
+{
+    cout << desc << "\n";
 }
 
 void printShaderStatus(GLuint shader)
