@@ -221,9 +221,7 @@ int main(int argc, char const *argv[])
         {
             auto model = mat4(1.0f);
             model = translate(model, pos);
-            model = rotate(model,
-                radians(currentFrame * -55.0f),
-                vec3(1.0f, 0.3f, 0.5f));
+            model = rotate(model, radians(currentFrame * -55.0f), vec3(1.0f, 0.3f, 0.5f));
             glUniformMatrix4fv(modelId, 1, GL_FALSE, value_ptr(model));
             glDrawArrays(GL_TRIANGLES, 0, vertices.size());
         }
@@ -383,9 +381,8 @@ Camera::Camera(GLFWwindow* w)
     sensitivity = 5.0f;
     speed       = 3.0f;
     dir         = vec3(0.0f, 0.0f, -1.0f);
-    right       = cross(vec3(0.0f, 1.0f, 0.0f), dir);
-    up          = cross(dir, right);
-    right       = cross(dir, up);
+    up          = vec3(0.0f, 1.0f, 0.0f);
+    right       = normalize(cross(up, dir));
 }
 
 void Camera::update(float delta)
@@ -396,17 +393,16 @@ void Camera::update(float delta)
 
 void Camera::updateMovement(float delta)
 {
-    right = cross(dir, up);
     auto deltaSpeed = speed * delta;
 
     if(glfwGetKey(window, GLFW_KEY_W))
-        pos += deltaSpeed * dir;
+        pos += normalize(dir) * deltaSpeed;
     if(glfwGetKey(window, GLFW_KEY_S))
-        pos -= deltaSpeed * dir;
+        pos -= normalize(dir) * deltaSpeed;
     if(glfwGetKey(window, GLFW_KEY_A))
-        pos -= glm::normalize(right) * deltaSpeed;
+        pos -= normalize(right) * deltaSpeed;
     if(glfwGetKey(window, GLFW_KEY_D))
-        pos += glm::normalize(right) * deltaSpeed;
+        pos += normalize(right) * deltaSpeed;
 }
 
 void Camera::updateLook(float delta)
@@ -441,10 +437,12 @@ void Camera::updateLook(float delta)
     else if (pitch < -89.0f)
         pitch = -89.0f;
 
-    dir.x = cosf(radians(yaw)) * cosf(radians(pitch));
-    dir.y = sinf(radians(pitch));
-    dir.z = sinf(radians(yaw)) * cosf(radians(pitch));
-    dir = normalize(dir);
+    auto newDir = vec3(0.0f);
+    newDir.x = cosf(radians(yaw)) * cosf(radians(pitch));
+    newDir.y = sinf(radians(pitch));
+    newDir.z = sinf(radians(yaw)) * cosf(radians(pitch));
+    dir = normalize(newDir);
+    right = normalize(cross(dir, up));
 }
 
 void Camera::setPosition(vec3 p)
