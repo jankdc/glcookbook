@@ -33,10 +33,10 @@ using glm::normalize;
 const auto WINDOW_WIDTH  = 800;
 const auto WINDOW_HEIGHT = 600;
 const auto WINDOW_TITLE  = "GL Cook Book - Playing with Camera.";
+const auto CENTER_X = static_cast<double>(WINDOW_WIDTH)  / 2.0;
+const auto CENTER_Y = static_cast<double>(WINDOW_HEIGHT) / 2.0;
+const auto RATIO = static_cast<float>(WINDOW_WIDTH/WINDOW_HEIGHT);
 
-void updateKey(GLFWwindow* window, int key, int code, int action, int mode);
-void updateMouse(GLFWwindow* window, double xpos, double ypos);
-void updateMovement();
 void printErr(int code, const char* desc);
 void printShaderStatus(GLuint shader);
 string makeString(string path);
@@ -47,29 +47,29 @@ GLuint makeFShader(string path);
 GLuint makeTexture(string path);
 GLuint makeProgram(vector<GLuint> shaders);
 
-// GLOBAL KEY DICTIONARY
-bool KEYS[GLFW_KEY_LAST];
+class Camera {
+public:
+    Camera(GLFWwindow* w);
 
-// We set this to -90.0f since a yaw of 0.0f results in a direction
-// vector pointing to your right (due to how Eular angles work)
-// so we initially rotate a bit to the left.
-auto cameraYaw = -90.0f;
-auto cameraPitch = 0.0f;
-auto cameraPos = vec3(0.0f, 0.0f, 2.0f);
-auto cameraDir = vec3(0.0f, 0.0f, -1.0f);
-auto cameraRight = cross(vec3(0.0f, 1.0f, 0.0f), cameraDir);
-auto cameraUp = cross(cameraDir, cameraRight);
-auto cameraSpeed = 0.05f;
-auto lastX = static_cast<float>(WINDOW_WIDTH)/2.0f;
-auto lastY = static_cast<float>(WINDOW_HEIGHT)/2.0f;
-auto lastFrame = 0.0f;
-auto deltaTime = 0.0f;
-auto firstMouse = true;
+    void update(float delta);
+    void updateMovement(float delta);
+    void updateLook(float delta);
+    void setPosition(vec3 p);
+    void setDirection(vec3 d);
+    void setMovementSpeed(float s);
+    void setSensitivity(float s);
+    mat4 getView() const;
+private:
+    GLFWwindow* window;
+    float pitch, yaw;
+    float sensitivity, speed;
+    vec3 pos, dir, up, right;
+    float lastX, lastY;
+    bool moved;
+};
 
 int main(int argc, char const *argv[])
 {
-    cameraRight = cross(cameraDir, cameraUp);
-
     glfwSetErrorCallback(printErr);
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -90,8 +90,6 @@ int main(int argc, char const *argv[])
         nullptr);
 
     glfwMakeContextCurrent(window);
-    glfwSetKeyCallback(window, updateKey);
-    glfwSetCursorPosCallback(window, updateMouse);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     glewExperimental = GL_TRUE;
@@ -183,6 +181,12 @@ int main(int argc, char const *argv[])
     glUniform1i(glGetUniformLocation(program, "ourTexture2"), 1);
     glUseProgram(0);
 
+    auto camera = Camera(window);
+    camera.setPosition(vec3(0.0f, 0.0f, 2.0f));
+
+    auto lastFrame = static_cast<float>(glfwGetTime());
+    auto deltaTime = 0.0f;
+
     while (! glfwWindowShouldClose(window))
     {
         auto currentFrame = static_cast<float>(glfwGetTime());
@@ -191,10 +195,10 @@ int main(int argc, char const *argv[])
 
         glfwPollEvents();
 
-        if(KEYS[GLFW_KEY_ESCAPE])
+        if (glfwGetKey(window, GLFW_KEY_ESCAPE))
             glfwSetWindowShouldClose(window, GL_TRUE);
 
-        updateMovement();
+        camera.update(deltaTime);
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -205,10 +209,9 @@ int main(int argc, char const *argv[])
         auto viewId = glGetUniformLocation(program, "view");
         auto projId = glGetUniformLocation(program, "projection");
 
-        auto view = glm::lookAt(cameraPos, cameraPos + cameraDir, cameraUp);
-        auto proj = mat4(1.0f);
-        auto ratio = static_cast<float>(WINDOW_WIDTH/WINDOW_HEIGHT);
-        proj = perspective(45.0f, ratio, 0.1f, 1000.0f);
+
+        auto view = camera.getView();
+        auto proj = perspective(45.0f, RATIO, 0.1f, 1000.0f);
 
         glUniformMatrix4fv(viewId, 1, GL_FALSE, value_ptr(view));
         glUniformMatrix4fv(projId, 1, GL_FALSE, value_ptr(proj));
@@ -237,60 +240,6 @@ int main(int argc, char const *argv[])
     glfwTerminate();
 
     return 0;
-}
-
-void updateKey(GLFWwindow* window, int key, int code, int action, int mode)
-{
-    if (action == GLFW_PRESS)
-        KEYS[key] = true;
-    if (action == GLFW_RELEASE)
-        KEYS[key] = false;
-}
-
-void updateMouse(GLFWwindow* window, double xpos, double ypos)
-{
-    if (firstMouse) {
-        lastX = xpos;
-        lastY = ypos;
-        firstMouse = false;
-    }
-
-    auto xoffset = xpos - lastX;
-    auto yoffset = lastY - ypos;
-    lastX = xpos;
-    lastY = ypos;
-
-    auto sensitivity = 0.05;
-    xoffset *= sensitivity;
-    yoffset *= sensitivity;
-
-    cameraYaw   += xoffset;
-    cameraPitch += yoffset;
-
-    if(cameraPitch >  89.0f)
-        cameraPitch = 89.0f;
-    if(cameraPitch < -89.0f)
-        cameraPitch = -89.0f;
-
-    glm::vec3 front;
-    front.x = cosf(radians(cameraYaw)) * cosf(radians(cameraPitch));
-    front.y = sinf(radians(cameraPitch));
-    front.z = sinf(radians(cameraYaw)) * cosf(radians(cameraPitch));
-    cameraDir = normalize(front);
-}
-
-void updateMovement()
-{
-    cameraSpeed = 0.5f * deltaTime;
-
-    if(KEYS[GLFW_KEY_W])
-        cameraPos += cameraSpeed * cameraDir;
-    if(KEYS[GLFW_KEY_S])
-        cameraPos -= cameraSpeed * cameraDir;
-    if(KEYS[GLFW_KEY_A])
-        cameraPos -= glm::normalize(cameraRight) * cameraSpeed;
-    if(KEYS[GLFW_KEY_D])
-        cameraPos += glm::normalize(cameraRight) * cameraSpeed;
 }
 
 void printErr(int code, const char* desc)
@@ -424,4 +373,101 @@ string makeString(string path)
     file.read(&buffer[0], size);
     file.close();
     return buffer;
+}
+
+Camera::Camera(GLFWwindow* w)
+{
+    window      = w;
+    pitch       = 0.0f;
+    yaw         = -90.0f;
+    sensitivity = 5.0f;
+    speed       = 3.0f;
+    dir         = vec3(0.0f, 0.0f, -1.0f);
+    right       = cross(vec3(0.0f, 1.0f, 0.0f), dir);
+    up          = cross(dir, right);
+    right       = cross(dir, up);
+}
+
+void Camera::update(float delta)
+{
+    updateMovement(delta);
+    updateLook(delta);
+}
+
+void Camera::updateMovement(float delta)
+{
+    right = cross(dir, up);
+    auto deltaSpeed = speed * delta;
+
+    if(glfwGetKey(window, GLFW_KEY_W))
+        pos += deltaSpeed * dir;
+    if(glfwGetKey(window, GLFW_KEY_S))
+        pos -= deltaSpeed * dir;
+    if(glfwGetKey(window, GLFW_KEY_A))
+        pos -= glm::normalize(right) * deltaSpeed;
+    if(glfwGetKey(window, GLFW_KEY_D))
+        pos += glm::normalize(right) * deltaSpeed;
+}
+
+void Camera::updateLook(float delta)
+{
+    auto currentCursorX = CENTER_X;
+    auto currentCursorY = CENTER_Y;
+
+    glfwGetCursorPos(window, &currentCursorX, &currentCursorY);
+
+    // glfwGetCursorPos return incorrect value when cursor hasn't moved
+    // for the first time. Prevents camera jolting when you move the cursor
+    // the first time.
+    if (not moved and currentCursorX != 0.0 and currentCursorY != 0.0)
+    {
+        lastX = currentCursorX;
+        lastY = currentCursorY;
+
+        moved = true;
+    }
+
+    auto xoffset = currentCursorX - lastX;
+    auto yoffset = lastY - currentCursorY;
+
+    lastX = currentCursorX;
+    lastY = currentCursorY;
+
+    yaw += sensitivity * delta * xoffset;
+    pitch += sensitivity * delta * yoffset;
+
+    if (pitch > 89.0f)
+        pitch = 89.0f;
+    else if (pitch < -89.0f)
+        pitch = -89.0f;
+
+    dir.x = cosf(radians(yaw)) * cosf(radians(pitch));
+    dir.y = sinf(radians(pitch));
+    dir.z = sinf(radians(yaw)) * cosf(radians(pitch));
+    dir = normalize(dir);
+}
+
+void Camera::setPosition(vec3 p)
+{
+    pos = p;
+}
+
+void Camera::setDirection(vec3 d)
+{
+    dir = d;
+}
+
+void Camera::setSensitivity(float s)
+{
+    sensitivity = s;
+}
+
+void Camera::setMovementSpeed(float s)
+{
+    speed = s;
+}
+
+mat4 Camera::getView() const
+{
+    return lookAt(pos, pos + dir, up);
 }
