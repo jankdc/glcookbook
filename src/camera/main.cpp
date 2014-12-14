@@ -382,7 +382,7 @@ Camera::Camera(GLFWwindow* w)
     window      = w;
     pitch       = 0.0f;
     yaw         = -90.0f;
-    sensitivity = 5.5f;
+    sensitivity = 5.0f;
     speed       = 3.0f;
     dir         = vec3(0.0f, 0.0f, -1.0f);
     worldUp     = vec3(0.0f, 1.0f, 0.0f);
