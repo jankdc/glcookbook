@@ -33,8 +33,6 @@ using glm::normalize;
 const auto WINDOW_WIDTH  = 800;
 const auto WINDOW_HEIGHT = 600;
 const auto WINDOW_TITLE  = "GL Cook Book - Playing with Camera.";
-const auto CENTER_X = static_cast<double>(WINDOW_WIDTH)  / 2.0;
-const auto CENTER_Y = static_cast<double>(WINDOW_HEIGHT) / 2.0;
 const auto RATIO = static_cast<float>(WINDOW_WIDTH/WINDOW_HEIGHT);
 
 void printErr(int code, const char* desc);
@@ -61,11 +59,18 @@ public:
     mat4 getView() const;
 private:
     GLFWwindow* window;
-    float pitch, yaw;
-    float sensitivity, speed;
-    vec3 pos, dir, up, right;
-    float lastX, lastY;
-    bool moved;
+    GLfloat pitch;
+    GLfloat yaw;
+    GLfloat sensitivity;
+    GLfloat speed;
+    vec3 pos;
+    vec3 dir;
+    vec3 up;
+    vec3 right;
+    vec3 worldUp;
+    GLfloat lastX;
+    GLfloat lastY;
+    GLboolean moved;
 };
 
 int main(int argc, char const *argv[])
@@ -208,7 +213,6 @@ int main(int argc, char const *argv[])
         auto modelId = glGetUniformLocation(program, "model");
         auto viewId = glGetUniformLocation(program, "view");
         auto projId = glGetUniformLocation(program, "projection");
-
 
         auto view = camera.getView();
         auto proj = perspective(45.0f, RATIO, 0.1f, 1000.0f);
@@ -378,11 +382,12 @@ Camera::Camera(GLFWwindow* w)
     window      = w;
     pitch       = 0.0f;
     yaw         = -90.0f;
-    sensitivity = 5.0f;
+    sensitivity = 5.5f;
     speed       = 3.0f;
     dir         = vec3(0.0f, 0.0f, -1.0f);
-    up          = vec3(0.0f, 1.0f, 0.0f);
-    right       = normalize(cross(up, dir));
+    worldUp     = vec3(0.0f, 1.0f, 0.0f);
+    right       = normalize(cross(worldUp, dir));
+    moved       = GL_FALSE;
 }
 
 void Camera::update(float delta)
@@ -407,8 +412,8 @@ void Camera::updateMovement(float delta)
 
 void Camera::updateLook(float delta)
 {
-    auto currentCursorX = CENTER_X;
-    auto currentCursorY = CENTER_Y;
+    auto currentCursorX = 0.0;
+    auto currentCursorY = 0.0;
 
     glfwGetCursorPos(window, &currentCursorX, &currentCursorY);
 
@@ -434,15 +439,17 @@ void Camera::updateLook(float delta)
 
     if (pitch > 89.0f)
         pitch = 89.0f;
-    else if (pitch < -89.0f)
+    if (pitch < -89.0f)
         pitch = -89.0f;
 
     auto newDir = vec3(0.0f);
     newDir.x = cosf(radians(yaw)) * cosf(radians(pitch));
     newDir.y = sinf(radians(pitch));
     newDir.z = sinf(radians(yaw)) * cosf(radians(pitch));
-    dir = normalize(newDir);
-    right = normalize(cross(dir, up));
+
+    dir   = normalize(newDir);
+    right = normalize(cross(dir, worldUp));
+    up    = normalize(cross(dir, right));
 }
 
 void Camera::setPosition(vec3 p)
@@ -467,5 +474,5 @@ void Camera::setMovementSpeed(float s)
 
 mat4 Camera::getView() const
 {
-    return lookAt(pos, pos + dir, up);
+    return lookAt(pos, pos + dir, worldUp);
 }
