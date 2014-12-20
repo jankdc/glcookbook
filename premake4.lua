@@ -142,3 +142,10 @@ solution "glcookbook"
             "src/color/**.cpp",
             "src/color/**.h"
         }
+
+    project "basic_lighting"
+        location "build/basic_lighting"
+        files {
+            "src/basic_lighting/**.cpp",
+            "src/basic_lighting/**.h"
+        }
