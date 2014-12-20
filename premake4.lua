@@ -135,3 +135,10 @@ solution "glcookbook"
             "src/camera/**.cpp",
             "src/camera/**.h"
         }
+
+    project "color"
+        location "build/color"
+        files {
+            "src/color/**.cpp",
+            "src/color/**.h"
+        }
