@@ -93,18 +93,23 @@ int main(int argc, char const *argv[])
     // have a normalized default anyway.
     // glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-    auto vshader = glc::makeVShader("res/color/model_v.glsl");
-    glc::printShaderStatus(vshader);
+    auto objectVShader = glc::makeVShader("res/color/object_v.glsl");
+    auto objectFShader = glc::makeFShader("res/color/object_f.glsl");
+    auto objectShader = glc::makeProgram({objectVShader, objectFShader});
+    auto objectVao = glc::makeMesh(VERTICES);
+    glc::printShaderStatus(objectVShader);
+    glc::printShaderStatus(objectFShader);
 
-    auto fshader = glc::makeFShader("res/color/model_f.glsl");
-    glc::printShaderStatus(fshader);
-
-    auto program = glc::makeProgram({vshader, fshader});
+    auto lampVShader = glc::makeVShader("res/color/lamp_v.glsl");
+    auto lampFShader = glc::makeFShader("res/color/lamp_f.glsl");
+    auto lampShader = glc::makeProgram({lampVShader, lampFShader});
+    auto lampVao = glc::makeMesh(VERTICES);
+    glc::printShaderStatus(lampVShader);
+    glc::printShaderStatus(lampFShader);
 
     auto camera = glc::Camera(window);
-    camera.setPosition(glm::vec3(0.0f, 0.0f, 2.0f));
+    camera.setPosition(glm::vec3(0.5f, 0.0f, 5.0f));
 
-    auto vao = glc::makeMesh(VERTICES);
     auto lastFrame = static_cast<float>(glfwGetTime());
     auto deltaTime = 0.0f;
 
@@ -124,39 +129,67 @@ int main(int argc, char const *argv[])
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glUseProgram(program);
-
-        auto modelId = glGetUniformLocation(program, "model");
-        auto modelColorId = glGetUniformLocation(program, "modelColor");
-        auto viewId = glGetUniformLocation(program, "view");
-        auto projectionId = glGetUniformLocation(program, "projection");
-
         auto view = camera.generateMat();
         auto projection = glm::perspective(45.0f, RATIO, 0.1f, 1000.0f);
-        auto model = glm::mat4(1.0f);
-        auto modelColor = glm::vec3(1.0f, 0.5f, 0.31f);
-        auto modelRotationAngle = glm::radians(currentFrame * -55.0f);
-        auto modelRotationAxis = glm::vec3(1.0f, 0.3f, 0.5f);
-        model = glm::translate(model, glm::vec3(0.0f));
-        model = glm::rotate(model, modelRotationAngle, modelRotationAxis);
 
-        glUniformMatrix4fv(modelId, 1, GL_FALSE, glm::value_ptr(model));
-        glUniformMatrix4fv(viewId, 1, GL_FALSE, glm::value_ptr(view));
-        glUniformMatrix4fv(projectionId, 1, GL_FALSE, glm::value_ptr(projection));
-        glUniform3f(modelColorId, modelColor.r, modelColor.g, modelColor.b);
+        glUseProgram(objectShader);
 
-        glBindVertexArray(vao);
-        glDrawArrays(GL_TRIANGLES, 0, VERTICES.size());
-        glBindVertexArray(0);
+        {
+            auto modelId = glGetUniformLocation(objectShader, "model");
+            auto modelColorId = glGetUniformLocation(objectShader, "modelColor");
+            auto viewId = glGetUniformLocation(objectShader, "view");
+            auto projectionId = glGetUniformLocation(objectShader, "projection");
+
+            auto model = glm::mat4(1.0f);
+            auto modelColor = glm::vec3(1.0f, 0.5f, 0.31f);
+            auto modelRotationAngle = glm::radians(currentFrame * -55.0f);
+            auto modelRotationAxis = glm::vec3(1.0f, 0.3f, 0.5f);
+            model = glm::translate(model, glm::vec3(0.0f));
+            model = glm::rotate(model, modelRotationAngle, modelRotationAxis);
+
+            glUniformMatrix4fv(modelId, 1, GL_FALSE, glm::value_ptr(model));
+            glUniformMatrix4fv(viewId, 1, GL_FALSE, glm::value_ptr(view));
+            glUniformMatrix4fv(projectionId, 1, GL_FALSE, glm::value_ptr(projection));
+            glUniform3f(modelColorId, modelColor.r, modelColor.g, modelColor.b);
+
+            glBindVertexArray(objectVao);
+            glDrawArrays(GL_TRIANGLES, 0, VERTICES.size());
+            glBindVertexArray(0);
+        }
+
+        glUseProgram(lampShader);
+
+        {
+            auto modelId = glGetUniformLocation(lampShader, "model");
+            auto viewId = glGetUniformLocation(lampShader, "view");
+            auto projectionId = glGetUniformLocation(lampShader, "projection");
+
+            auto model = glm::mat4(1.0f);
+            model = glm::translate(model, glm::vec3(1.2f, 1.0f, 2.0f));
+            model = glm::scale(model, glm::vec3(0.2f));
+
+            glUniformMatrix4fv(modelId, 1, GL_FALSE, glm::value_ptr(model));
+            glUniformMatrix4fv(viewId, 1, GL_FALSE, glm::value_ptr(view));
+            glUniformMatrix4fv(projectionId, 1, GL_FALSE, glm::value_ptr(projection));
+
+            glBindVertexArray(lampVao);
+            glDrawArrays(GL_TRIANGLES, 0, VERTICES.size());
+            glBindVertexArray(0);
+        }
 
         glUseProgram(0);
 
         glfwSwapBuffers(window);
     }
 
-    glDeleteShader(vshader);
-    glDeleteShader(fshader);
-    glDeleteProgram(program);
+    glDeleteShader(objectVShader);
+    glDeleteShader(objectFShader);
+    glDeleteProgram(objectShader);
+
+    glDeleteShader(lampVShader);
+    glDeleteShader(lampFShader);
+    glDeleteProgram(lampShader);
+
     glfwTerminate();
 
     return 0;
