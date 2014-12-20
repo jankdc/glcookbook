@@ -107,10 +107,10 @@ int main(int argc, char const *argv[])
     // have a normalized default anyway.
     // glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-    auto vshader = makeVShader("res/color/vertex.glsl");
+    auto vshader = makeVShader("res/color/object_v.glsl");
     printShaderStatus(vshader);
 
-    auto fshader = makeFShader("res/color/fragment.glsl");
+    auto fshader = makeFShader("res/color/object_f.glsl");
     printShaderStatus(fshader);
 
     auto program = makeProgram({vshader, fshader});
