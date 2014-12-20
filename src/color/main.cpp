@@ -93,10 +93,10 @@ int main(int argc, char const *argv[])
     // have a normalized default anyway.
     // glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-    auto vshader = glc::makeVShader("res/color/object_v.glsl");
+    auto vshader = glc::makeVShader("res/color/model_v.glsl");
     glc::printShaderStatus(vshader);
 
-    auto fshader = glc::makeFShader("res/color/object_f.glsl");
+    auto fshader = glc::makeFShader("res/color/model_f.glsl");
     glc::printShaderStatus(fshader);
 
     auto program = glc::makeProgram({vshader, fshader});
