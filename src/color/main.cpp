@@ -56,7 +56,7 @@ public:
     void setDirection(vec3 d);
     void setMovementSpeed(float s);
     void setSensitivity(float s);
-    mat4 getView() const;
+    mat4 generateMat() const;
 private:
     GLFWwindow* window;
     GLfloat pitch;
@@ -188,7 +188,7 @@ int main(int argc, char const *argv[])
         auto viewId = glGetUniformLocation(program, "view");
         auto projectionId = glGetUniformLocation(program, "projection");
 
-        auto view = camera.getView();
+        auto view = camera.generateMat();
         auto projection = perspective(45.0f, RATIO, 0.1f, 1000.0f);
         auto model = mat4(1.0f);
         model = translate(model, vec3(0.0f));
@@ -443,7 +443,7 @@ void Camera::setMovementSpeed(float s)
     speed = s;
 }
 
-mat4 Camera::getView() const
+mat4 Camera::generateMat() const
 {
     return lookAt(pos, pos + dir, worldUp);
 }
