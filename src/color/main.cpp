@@ -127,12 +127,14 @@ int main(int argc, char const *argv[])
         glUseProgram(program);
 
         auto modelId = glGetUniformLocation(program, "model");
+        auto modelColorId = glGetUniformLocation(program, "modelColor");
         auto viewId = glGetUniformLocation(program, "view");
         auto projectionId = glGetUniformLocation(program, "projection");
 
         auto view = camera.generateMat();
         auto projection = glm::perspective(45.0f, RATIO, 0.1f, 1000.0f);
         auto model = glm::mat4(1.0f);
+        auto modelColor = glm::vec3(1.0f, 0.5f, 0.31f);
         auto modelRotationAngle = glm::radians(currentFrame * -55.0f);
         auto modelRotationAxis = glm::vec3(1.0f, 0.3f, 0.5f);
         model = glm::translate(model, glm::vec3(0.0f));
@@ -141,6 +143,7 @@ int main(int argc, char const *argv[])
         glUniformMatrix4fv(modelId, 1, GL_FALSE, glm::value_ptr(model));
         glUniformMatrix4fv(viewId, 1, GL_FALSE, glm::value_ptr(view));
         glUniformMatrix4fv(projectionId, 1, GL_FALSE, glm::value_ptr(projection));
+        glUniform3f(modelColorId, modelColor.r, modelColor.g, modelColor.b);
 
         glBindVertexArray(vao);
         glDrawArrays(GL_TRIANGLES, 0, VERTICES.size());
