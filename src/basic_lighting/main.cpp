@@ -140,6 +140,7 @@ int main(int argc, char const *argv[])
             auto modelId = glGetUniformLocation(objectShader, "model");
             auto modelColorId = glGetUniformLocation(objectShader, "modelColor");
             auto viewId = glGetUniformLocation(objectShader, "view");
+            auto viewPosId = glGetUniformLocation(objectShader, "viewPos");
             auto projectionId = glGetUniformLocation(objectShader, "projection");
             auto lightPosId = glGetUniformLocation(objectShader, "lightPos");
 
@@ -151,13 +152,15 @@ int main(int argc, char const *argv[])
             model = glm::translate(model, glm::vec3(0.0f));
             model = glm::rotate(model, modelRotationAngle, modelRotationAxis);
 
+            auto viewPos = camera.getPosition();
+
             glUniformMatrix4fv(modelId, 1, GL_FALSE, glm::value_ptr(model));
             glUniformMatrix4fv(viewId, 1, GL_FALSE, glm::value_ptr(view));
             glUniformMatrix4fv(projectionId, 1, GL_FALSE, glm::value_ptr(projection));
             glUniformMatrix3fv(modelNormalId, 1, GL_FALSE, glm::value_ptr(modelNormal));
             glUniform3f(modelColorId, modelColor.r, modelColor.g, modelColor.b);
             glUniform3f(lightPosId, LIGHT_POS.x, LIGHT_POS.y, LIGHT_POS.z);
-
+            glUniform3f(viewPosId, viewPos.x, viewPos.y, viewPos.z);
 
             glBindVertexArray(objectVao);
             glDrawArrays(GL_TRIANGLES, 0, VERTICES.size());
