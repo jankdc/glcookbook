@@ -149,3 +149,10 @@ solution "glcookbook"
             "src/basic_lighting/**.cpp",
             "src/basic_lighting/**.h"
         }
+
+    project "material"
+        location "build/material"
+        files {
+            "src/material/**.cpp",
+            "src/material/**.h"
+        }
