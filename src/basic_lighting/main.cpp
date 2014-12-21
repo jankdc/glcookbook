@@ -136,6 +136,7 @@ int main(int argc, char const *argv[])
         glUseProgram(objectShader);
 
         {
+            auto modelNormalId = glGetUniformLocation(objectShader, "modelNormal");
             auto modelId = glGetUniformLocation(objectShader, "model");
             auto modelColorId = glGetUniformLocation(objectShader, "modelColor");
             auto viewId = glGetUniformLocation(objectShader, "view");
@@ -146,14 +147,17 @@ int main(int argc, char const *argv[])
             auto modelColor = glm::vec3(1.0f, 0.5f, 0.31f);
             auto modelRotationAngle = glm::radians(currentFrame * -55.0f);
             auto modelRotationAxis = glm::vec3(1.0f, 0.3f, 0.5f);
+            auto modelNormal = glm::mat3(glm::transpose(glm::inverse(model)));
             model = glm::translate(model, glm::vec3(0.0f));
             model = glm::rotate(model, modelRotationAngle, modelRotationAxis);
 
             glUniformMatrix4fv(modelId, 1, GL_FALSE, glm::value_ptr(model));
             glUniformMatrix4fv(viewId, 1, GL_FALSE, glm::value_ptr(view));
             glUniformMatrix4fv(projectionId, 1, GL_FALSE, glm::value_ptr(projection));
+            glUniformMatrix3fv(modelNormalId, 1, GL_FALSE, glm::value_ptr(modelNormal));
             glUniform3f(modelColorId, modelColor.r, modelColor.g, modelColor.b);
             glUniform3f(lightPosId, LIGHT_POS.x, LIGHT_POS.y, LIGHT_POS.z);
+
 
             glBindVertexArray(objectVao);
             glDrawArrays(GL_TRIANGLES, 0, VERTICES.size());
