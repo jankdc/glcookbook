@@ -19,7 +19,7 @@ void main()
     vec3 viewDir = normalize(viewPos - vertexPos);
     vec3 reflectDir = reflect(-lightDir, vertexNormal);
     float diffuse = max(dot(norm, lightDir), 0.0f);
-    float specular = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+    float specular = pow(max(dot(viewDir, reflectDir), 0.0), 64);
     diffuseColor = diffuse * diffuseColor;
     specularColor = specular * specularColor;
     vec3 result = (ambientColor + diffuseColor + specularColor) * modelColor;

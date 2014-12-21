@@ -57,7 +57,6 @@ const auto VERTICES = std::vector<GLfloat> {
     -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
     -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
 };
-const auto LIGHT_POS = glm::vec3(1.2f, 1.0f, 2.0f);
 
 
 int main(int argc, char const *argv[])
@@ -111,6 +110,8 @@ int main(int argc, char const *argv[])
     auto camera = glc::Camera(window);
     camera.setPosition(glm::vec3(0.5f, 0.0f, 5.0f));
 
+    auto lightPos = glm::vec3(1.2f, 1.0f, 2.0f);
+
     auto lastFrame = static_cast<float>(glfwGetTime());
     auto deltaTime = 0.0f;
 
@@ -132,6 +133,9 @@ int main(int argc, char const *argv[])
 
         auto view = camera.generateMat();
         auto projection = glm::perspective(45.0f, RATIO, 0.1f, 1000.0f);
+
+        lightPos.x = 1.0f + sinf(currentFrame) * 2.0f;
+        lightPos.y = sinf(currentFrame / 2.0f) * 1.0f;
 
         glUseProgram(objectShader);
 
@@ -159,7 +163,7 @@ int main(int argc, char const *argv[])
             glUniformMatrix4fv(projectionId, 1, GL_FALSE, glm::value_ptr(projection));
             glUniformMatrix3fv(modelNormalId, 1, GL_FALSE, glm::value_ptr(modelNormal));
             glUniform3f(modelColorId, modelColor.r, modelColor.g, modelColor.b);
-            glUniform3f(lightPosId, LIGHT_POS.x, LIGHT_POS.y, LIGHT_POS.z);
+            glUniform3f(lightPosId, lightPos.x, lightPos.y, lightPos.z);
             glUniform3f(viewPosId, viewPos.x, viewPos.y, viewPos.z);
 
             glBindVertexArray(objectVao);
@@ -175,7 +179,7 @@ int main(int argc, char const *argv[])
             auto projectionId = glGetUniformLocation(lampShader, "projection");
 
             auto model = glm::mat4(1.0f);
-            model = glm::translate(model, LIGHT_POS);
+            model = glm::translate(model, lightPos);
             model = glm::scale(model, glm::vec3(0.2f));
 
             glUniformMatrix4fv(modelId, 1, GL_FALSE, glm::value_ptr(model));
