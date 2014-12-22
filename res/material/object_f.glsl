@@ -11,18 +11,15 @@ uniform vec3 viewPos;
 
 void main()
 {
-    vec3 ambientColor = vec3(0.2f);
-    vec3 diffuseColor = vec3(0.5f);
-    vec3 specularColor = vec3(0.5f);
-    vec3 norm = normalize(vertexNormal);
-    vec3 lightDir = normalize(lightPos - vertexPos);
-    vec3 viewDir = normalize(viewPos - vertexPos);
-    vec3 reflectDir = reflect(-lightDir, vertexNormal);
-    float diffuse = max(dot(norm, lightDir), 0.0f);
-    float specular = pow(max(dot(viewDir, reflectDir), 0.0), 64);
-    diffuseColor = diffuse * diffuseColor;
-    specularColor = specular * specularColor;
-    vec3 result = (ambientColor + diffuseColor + specularColor) * modelColor;
+    vec3 ld = normalize(lightPos - vertexPos);
+    vec3 v  = normalize(viewPos - vertexPos);
+    vec3 rd = reflect(-ld, vertexNormal);
+    vec3 n  = normalize(vertexNormal);
+    int  a  = 64;
 
-    color = vec4(result, 1.0f);
+    vec3 ka = vec3(0.2f);
+    vec3 kd = vec3(0.5f) * max(dot(n, ld), 0.0f);
+    vec3 ks = vec3(0.5f) * pow(max(dot(v, rd), 0.0), a);
+
+    color = vec4((ka + kd + ks) * modelColor, 1.0f);
 }
