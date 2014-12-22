@@ -100,6 +100,11 @@ void glc::Camera::setMovementSpeed(float speed)
     m_speed = speed;
 }
 
+glm::vec3 glc::Camera::getPosition() const
+{
+    return m_position;
+}
+
 glm::mat4 glc::Camera::generateMat() const
 {
     return glm::lookAt(m_position, m_position + m_direction, m_worldUp);

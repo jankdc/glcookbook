@@ -57,7 +57,6 @@ const auto VERTICES = std::vector<GLfloat> {
     -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
     -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
 };
-const auto LIGHT_POS = glm::vec3(1.2f, 1.0f, 2.0f);
 
 
 int main(int argc, char const *argv[])
@@ -111,6 +110,8 @@ int main(int argc, char const *argv[])
     auto camera = glc::Camera(window);
     camera.setPosition(glm::vec3(0.5f, 0.0f, 5.0f));
 
+    auto lightPos = glm::vec3(1.2f, 1.0f, 2.0f);
+
     auto lastFrame = static_cast<float>(glfwGetTime());
     auto deltaTime = 0.0f;
 
@@ -133,12 +134,17 @@ int main(int argc, char const *argv[])
         auto view = camera.generateMat();
         auto projection = glm::perspective(45.0f, RATIO, 0.1f, 1000.0f);
 
+        lightPos.x = 1.0f + sinf(currentFrame) * 2.0f;
+        lightPos.y = sinf(currentFrame / 2.0f) * 1.0f;
+
         glUseProgram(objectShader);
 
         {
+            auto modelNormalId = glGetUniformLocation(objectShader, "modelNormal");
             auto modelId = glGetUniformLocation(objectShader, "model");
             auto modelColorId = glGetUniformLocation(objectShader, "modelColor");
             auto viewId = glGetUniformLocation(objectShader, "view");
+            auto viewPosId = glGetUniformLocation(objectShader, "viewPos");
             auto projectionId = glGetUniformLocation(objectShader, "projection");
             auto lightPosId = glGetUniformLocation(objectShader, "lightPos");
 
@@ -146,14 +152,19 @@ int main(int argc, char const *argv[])
             auto modelColor = glm::vec3(1.0f, 0.5f, 0.31f);
             auto modelRotationAngle = glm::radians(currentFrame * -55.0f);
             auto modelRotationAxis = glm::vec3(1.0f, 0.3f, 0.5f);
+            auto modelNormal = glm::mat3(glm::transpose(glm::inverse(model)));
             model = glm::translate(model, glm::vec3(0.0f));
             model = glm::rotate(model, modelRotationAngle, modelRotationAxis);
+
+            auto viewPos = camera.getPosition();
 
             glUniformMatrix4fv(modelId, 1, GL_FALSE, glm::value_ptr(model));
             glUniformMatrix4fv(viewId, 1, GL_FALSE, glm::value_ptr(view));
             glUniformMatrix4fv(projectionId, 1, GL_FALSE, glm::value_ptr(projection));
+            glUniformMatrix3fv(modelNormalId, 1, GL_FALSE, glm::value_ptr(modelNormal));
             glUniform3f(modelColorId, modelColor.r, modelColor.g, modelColor.b);
-            glUniform3f(lightPosId, LIGHT_POS.x, LIGHT_POS.y, LIGHT_POS.z);
+            glUniform3f(lightPosId, lightPos.x, lightPos.y, lightPos.z);
+            glUniform3f(viewPosId, viewPos.x, viewPos.y, viewPos.z);
 
             glBindVertexArray(objectVao);
             glDrawArrays(GL_TRIANGLES, 0, VERTICES.size());
@@ -168,7 +179,7 @@ int main(int argc, char const *argv[])
             auto projectionId = glGetUniformLocation(lampShader, "projection");
 
             auto model = glm::mat4(1.0f);
-            model = glm::translate(model, LIGHT_POS);
+            model = glm::translate(model, lightPos);
             model = glm::scale(model, glm::vec3(0.2f));
 
             glUniformMatrix4fv(modelId, 1, GL_FALSE, glm::value_ptr(model));
