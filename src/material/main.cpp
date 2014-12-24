@@ -128,7 +128,7 @@ int main(int argc, char const *argv[])
 
         camera.update(deltaTime);
 
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         auto view = camera.generateMat();
@@ -167,6 +167,10 @@ int main(int argc, char const *argv[])
 
             auto viewPos = camera.getPosition();
 
+            auto lightColor = glm::vec3(1.0f);
+            auto lightDiffuseColor = glm::vec3(1.0f);
+            auto lightAmbientColor = glm::vec3(1.0f);
+
             glUniformMatrix4fv(modelId, 1, GL_FALSE, glm::value_ptr(model));
             glUniformMatrix4fv(viewId, 1, GL_FALSE, glm::value_ptr(view));
             glUniformMatrix4fv(projectionId, 1, GL_FALSE, glm::value_ptr(projection));
@@ -175,15 +179,15 @@ int main(int argc, char const *argv[])
             glUniform3f(viewPosId, viewPos.x, viewPos.y, viewPos.z);
 
             // Material
-            glUniform3f(matAmbientId, 1.0f, 0.5f, 0.31f);
-            glUniform3f(matDiffuseId, 1.0f, 0.5f, 0.31f);
-            glUniform3f(matSpecularId, 0.5f, 0.5f, 0.5f);
-            glUniform1f(matShineId, 32.0f);
+            glUniform3f(matAmbientId, 0.0f, 0.1f, 0.06f);
+            glUniform3f(matDiffuseId, 0.0f, 0.50980392f, 0.50980392f);
+            glUniform3f(matSpecularId, 0.50196078f, 0.50196078f, 0.50196078f);
+            glUniform1f(matShineId, 64.0f);
 
             // Light
             glUniform3f(lightPosId, lightPos.x, lightPos.y, lightPos.z);
-            glUniform3f(lightAmbientId, 0.2f, 0.2f, 0.2f);
-            glUniform3f(lightDiffuseId, 0.5f, 0.5f, 0.5f);
+            glUniform3f(lightAmbientId, lightAmbientColor.r, lightAmbientColor.g, lightAmbientColor.b);
+            glUniform3f(lightDiffuseId, lightDiffuseColor.r, lightDiffuseColor.g, lightDiffuseColor.b);
             glUniform3f(lightSpecularId, 1.0f, 1.0f, 1.0f);
 
             glBindVertexArray(objectVao);
