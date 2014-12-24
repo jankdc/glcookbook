@@ -156,3 +156,10 @@ solution "glcookbook"
             "src/material/**.cpp",
             "src/material/**.h"
         }
+
+    project "lightmaps"
+        location "build/lightmaps"
+        files {
+            "src/lightmaps/**.cpp",
+            "src/lightmaps/**.h"
+        }
