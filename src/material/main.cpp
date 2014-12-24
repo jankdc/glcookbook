@@ -140,13 +140,22 @@ int main(int argc, char const *argv[])
         glUseProgram(objectShader);
 
         {
+            auto matAmbientId = glGetUniformLocation(objectShader, "material.ka");
+            auto matDiffuseId = glGetUniformLocation(objectShader, "material.kd");
+            auto matSpecularId = glGetUniformLocation(objectShader, "material.ks");
+            auto matShineId = glGetUniformLocation(objectShader, "material.a");
+
+            auto lightAmbientId = glGetUniformLocation(objectShader, "light.ka");
+            auto lightDiffuseId = glGetUniformLocation(objectShader, "light.kd");
+            auto lightSpecularId = glGetUniformLocation(objectShader, "light.ks");
+            auto lightPosId = glGetUniformLocation(objectShader, "light.pos");
+
             auto modelNormalId = glGetUniformLocation(objectShader, "modelNormal");
             auto modelId = glGetUniformLocation(objectShader, "model");
             auto modelColorId = glGetUniformLocation(objectShader, "modelColor");
             auto viewId = glGetUniformLocation(objectShader, "view");
             auto viewPosId = glGetUniformLocation(objectShader, "viewPos");
             auto projectionId = glGetUniformLocation(objectShader, "projection");
-            auto lightPosId = glGetUniformLocation(objectShader, "lightPos");
 
             auto model = glm::mat4(1.0f);
             auto modelColor = glm::vec3(1.0f, 0.5f, 0.31f);
@@ -163,8 +172,19 @@ int main(int argc, char const *argv[])
             glUniformMatrix4fv(projectionId, 1, GL_FALSE, glm::value_ptr(projection));
             glUniformMatrix3fv(modelNormalId, 1, GL_FALSE, glm::value_ptr(modelNormal));
             glUniform3f(modelColorId, modelColor.r, modelColor.g, modelColor.b);
-            glUniform3f(lightPosId, lightPos.x, lightPos.y, lightPos.z);
             glUniform3f(viewPosId, viewPos.x, viewPos.y, viewPos.z);
+
+            // Material
+            glUniform3f(matAmbientId, 1.0f, 0.5f, 0.31f);
+            glUniform3f(matDiffuseId, 1.0f, 0.5f, 0.31f);
+            glUniform3f(matSpecularId, 0.5f, 0.5f, 0.5f);
+            glUniform1f(matShineId, 32.0f);
+
+            // Light
+            glUniform3f(lightPosId, lightPos.x, lightPos.y, lightPos.z);
+            glUniform3f(lightAmbientId, 0.2f, 0.2f, 0.2f);
+            glUniform3f(lightDiffuseId, 0.5f, 0.5f, 0.5f);
+            glUniform3f(lightSpecularId, 1.0f, 1.0f, 1.0f);
 
             glBindVertexArray(objectVao);
             glDrawArrays(GL_TRIANGLES, 0, VERTICES.size());
