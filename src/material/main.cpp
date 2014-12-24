@@ -165,7 +165,6 @@ int main(int argc, char const *argv[])
 
             auto viewPos = camera.getPosition();
 
-            auto lightColor = glm::vec3(1.0f);
             auto lightDiffuseColor = glm::vec3(1.0f);
             auto lightAmbientColor = glm::vec3(1.0f);
 
