@@ -1,38 +1,38 @@
 #version 330 core
 
-struct Material {
+in vec3 vertexPosition;
+in vec3 vertexNormal;
+
+struct material {
     vec3 ka;
     vec3 kd;
     vec3 ks;
     float a;
 };
 
-struct Light {
-    vec3 pos;
+struct light {
+    vec3 position;
     vec3 ka;
     vec3 kd;
     vec3 ks;
 };
 
-in vec3 vertexPos;
-in vec3 vertexNormal;
+uniform light Light;
+uniform material Material;
+uniform vec3 CameraPosition;
 
-layout (location = 0) out vec4 color;
-
-uniform Light light;
-uniform Material material;
-uniform vec3 viewPos;
+out vec4 finalColor;
 
 void main()
 {
-    vec3 ld = normalize(light.pos - vertexPos);
-    vec3 v  = normalize(viewPos - vertexPos);
+    vec3 ld = normalize(Light.position - vertexPosition);
+    vec3 v  = normalize(CameraPosition - vertexPosition);
     vec3 rd = reflect(-ld, vertexNormal);
     vec3 n  = normalize(vertexNormal);
 
-    vec3 ka = light.ka * material.ka;
-    vec3 kd = light.kd * material.kd * max(dot(n, ld), 0.0f);
-    vec3 ks = light.ks * material.ks * pow(max(dot(v, rd), 0.0), material.a);
+    vec3 ka = Light.ka * Material.ka;
+    vec3 kd = Light.kd * Material.kd * max(dot(n, ld), 0.0f);
+    vec3 ks = Light.ks * Material.ks * pow(max(dot(v, rd), 0.0), Material.a);
 
-    color = vec4(ka + kd + ks, 1.0f);
+    finalColor = vec4(ka + kd + ks, 1.0f);
 }

@@ -10,6 +10,26 @@
 
 #include <vector>
 
+struct Light {
+    glm::vec3 pos;
+    glm::vec3 ka;
+    glm::vec3 kd;
+    glm::vec3 ks;
+};
+
+struct Material {
+    glm::vec3 ka;
+    glm::vec3 kd;
+    glm::vec3 ks;
+    float sh;
+};
+
+struct Cube {
+    Material  material;
+    glm::vec3 position;
+};
+
+
 const auto WINDOW_WIDTH  = 800;
 const auto WINDOW_HEIGHT = 600;
 const auto WINDOW_TITLE  = "GL Cook Book - Playing with Material.";
@@ -61,17 +81,27 @@ const auto VERTICES = std::vector<GLfloat> {
 
 int main(int argc, char const *argv[])
 {
+    /*
+     _____ _   _ _____ _______
+    |_   _| \ | |_   _|__   __|
+      | | |  \| | | |    | |
+      | | | . ` | | |    | |
+     _| |_| |\  |_| |_   | |
+    |_____|_| \_|_____|  |_|
+
+    */
+
+
     glfwSetErrorCallback(glc::printErr);
     glfwInit();
+
+
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-
-    // GLEW has a bug for OS X where it still calls some legacy functions.
-    // We need this for now to prevent GLFW from crashing when legacy
-    // functions are called.
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+
 
     auto window = glfwCreateWindow(
         WINDOW_WIDTH,
@@ -80,113 +110,145 @@ int main(int argc, char const *argv[])
         nullptr,
         nullptr);
 
+
     glfwMakeContextCurrent(window);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
     glewExperimental = GL_TRUE;
     glewInit();
-
     glEnable(GL_DEPTH_TEST);
 
-    // OS X has a bug that does not normalise the viewport coordinates
-    // at all so only uncomment this when it's really needed since GLFW
-    // have a normalized default anyway.
-    // glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+    /*
+     _____  ______  _____  ____  _    _ _____   _____ ______  _____
+    |  __ \|  ____|/ ____|/ __ \| |  | |  __ \ / ____|  ____|/ ____|
+    | |__) | |__  | (___ | |  | | |  | | |__) | |    | |__  | (___
+    |  _  /|  __|  \___ \| |  | | |  | |  _  /| |    |  __|  \___ \
+    | | \ \| |____ ____) | |__| | |__| | | \ \| |____| |____ ____) |
+    |_|  \_\______|_____/ \____/ \____/|_|  \_\\_____|______|_____/
 
+    */
+
+
+    // CUBE MESH VAO
+    auto cubeMeshId = glc::makeMesh(VERTICES);
+
+
+    // CUBE SHADER
     auto objectVShader = glc::makeVShader("res/material/object_v.glsl");
     auto objectFShader = glc::makeFShader("res/material/object_f.glsl");
     auto objectShader = glc::makeProgram({objectVShader, objectFShader});
-    auto objectVao = glc::makeMesh(VERTICES);
     glc::printShaderStatus(objectVShader);
     glc::printShaderStatus(objectFShader);
+    glDeleteShader(objectFShader);
+    glDeleteShader(objectVShader);
 
+
+    // LIGHT SOURCE SHADER
     auto lampVShader = glc::makeVShader("res/material/lamp_v.glsl");
     auto lampFShader = glc::makeFShader("res/material/lamp_f.glsl");
     auto lampShader = glc::makeProgram({lampVShader, lampFShader});
-    auto lampVao = glc::makeMesh(VERTICES);
     glc::printShaderStatus(lampVShader);
     glc::printShaderStatus(lampFShader);
+    glDeleteShader(lampVShader);
+    glDeleteShader(lampFShader);
 
+
+    // CAMERA OBJECT
     auto camera = glc::Camera(window);
     camera.setPosition(glm::vec3(0.5f, 0.0f, 5.0f));
 
-    auto lightPos = glm::vec3(1.2f, 1.0f, 2.0f);
 
-    auto lastFrame = static_cast<float>(glfwGetTime());
-    auto deltaTime = 0.0f;
+    // LIGHT SOURCE
+    auto light = Light();
+    light.ka  = glm::vec3(1.0f);
+    light.kd  = glm::vec3(1.0f);
+    light.ks  = glm::vec3(1.0f);
+    light.pos = glm::vec3(1.2f, 1.0f, 2.0f);
+
+
+    /*
+     __  __          _____ _   _   _      ____   ____  _____
+    |  \/  |   /\   |_   _| \ | | | |    / __ \ / __ \|  __ \
+    | \  / |  /  \    | | |  \| | | |   | |  | | |  | | |__) |
+    | |\/| | / /\ \   | | | . ` | | |   | |  | | |  | |  ___/
+    | |  | |/ ____ \ _| |_| |\  | | |___| |__| | |__| | |
+    |_|  |_/_/    \_\_____|_| \_| |______\____/ \____/|_|
+
+    */
+
+
+    // TIME
+    auto oldTime = static_cast<float>(glfwGetTime());
+    auto newTime = static_cast<float>(glfwGetTime());
+    auto delta = 0.0f;
 
     while (! glfwWindowShouldClose(window))
     {
-        auto currentFrame = static_cast<float>(glfwGetTime());
-        deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
-
         glfwPollEvents();
 
-        if (glfwGetKey(window, GLFW_KEY_ESCAPE))
+        newTime = static_cast<float>(glfwGetTime());
+        delta   = newTime-oldTime;
+        oldTime = newTime;
+
+        if (glfwGetKey(window, GLFW_KEY_ESCAPE)) {
             glfwSetWindowShouldClose(window, GL_TRUE);
+        }
 
-        camera.update(deltaTime);
+        camera.update(delta);
 
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        light.pos.x = 1.0f + sinf(newTime) * 2.0f;
+        light.pos.y = sinf(newTime / 2.0f) * 1.0f;
 
         auto view = camera.generateMat();
         auto projection = glm::perspective(45.0f, RATIO, 0.1f, 1000.0f);
 
-        lightPos.x = 1.0f + sinf(currentFrame) * 2.0f;
-        lightPos.y = sinf(currentFrame / 2.0f) * 1.0f;
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glUseProgram(objectShader);
 
         {
-            auto matAmbientId = glGetUniformLocation(objectShader, "material.ka");
-            auto matDiffuseId = glGetUniformLocation(objectShader, "material.kd");
-            auto matSpecularId = glGetUniformLocation(objectShader, "material.ks");
-            auto matShineId = glGetUniformLocation(objectShader, "material.a");
+            auto matKaId = glGetUniformLocation(objectShader, "Material.ka");
+            auto matKdId = glGetUniformLocation(objectShader, "Material.kd");
+            auto matKsId = glGetUniformLocation(objectShader, "Material.ks");
+            auto matShineId = glGetUniformLocation(objectShader, "Material.a");
+            auto lightKaId = glGetUniformLocation(objectShader, "Light.ka");
+            auto lightKdId = glGetUniformLocation(objectShader, "Light.kd");
+            auto lightKsId = glGetUniformLocation(objectShader, "Light.ks");
+            auto lightPosId = glGetUniformLocation(objectShader, "Light.position");
+            auto modelId = glGetUniformLocation(objectShader, "Model");
+            auto viewId  = glGetUniformLocation(objectShader, "View");
+            auto projectionId = glGetUniformLocation(objectShader, "Projection");
+            auto normalMatId  = glGetUniformLocation(objectShader, "Normal");
+            auto cameraPosId  = glGetUniformLocation(objectShader, "CameraPosition");
+            auto cameraPos = camera.getPosition();
+            glUniform3f(lightPosId, light.pos.x, light.pos.y, light.pos.z);
+            glUniform3f(lightKaId, light.ka.r, light.ka.g, light.ka.b);
+            glUniform3f(lightKdId, light.kd.r, light.kd.g, light.kd.b);
+            glUniform3f(lightKsId, 1.0f, 1.0f, 1.0f);
 
-            auto lightAmbientId = glGetUniformLocation(objectShader, "light.ka");
-            auto lightDiffuseId = glGetUniformLocation(objectShader, "light.kd");
-            auto lightSpecularId = glGetUniformLocation(objectShader, "light.ks");
-            auto lightPosId = glGetUniformLocation(objectShader, "light.pos");
-
-            auto modelNormalId = glGetUniformLocation(objectShader, "modelNormal");
-            auto modelId = glGetUniformLocation(objectShader, "model");
-            auto viewId = glGetUniformLocation(objectShader, "view");
-            auto viewPosId = glGetUniformLocation(objectShader, "viewPos");
-            auto projectionId = glGetUniformLocation(objectShader, "projection");
 
             auto model = glm::mat4(1.0f);
-            auto modelRotationAngle = glm::radians(currentFrame * -55.0f);
+            auto modelRotationAngle = glm::radians(newTime * -55.0f);
             auto modelRotationAxis = glm::vec3(1.0f, 0.3f, 0.5f);
-            auto modelNormal = glm::mat3(glm::transpose(glm::inverse(model)));
             model = glm::translate(model, glm::vec3(0.0f));
             model = glm::rotate(model, modelRotationAngle, modelRotationAxis);
+            auto normalMat = glm::mat3(glm::transpose(glm::inverse(model)));
 
-            auto viewPos = camera.getPosition();
-
-            auto lightDiffuseColor = glm::vec3(1.0f);
-            auto lightAmbientColor = glm::vec3(1.0f);
 
             glUniformMatrix4fv(modelId, 1, GL_FALSE, glm::value_ptr(model));
             glUniformMatrix4fv(viewId, 1, GL_FALSE, glm::value_ptr(view));
             glUniformMatrix4fv(projectionId, 1, GL_FALSE, glm::value_ptr(projection));
-            glUniformMatrix3fv(modelNormalId, 1, GL_FALSE, glm::value_ptr(modelNormal));
-            glUniform3f(viewPosId, viewPos.x, viewPos.y, viewPos.z);
+            glUniformMatrix3fv(normalMatId, 1, GL_FALSE, glm::value_ptr(normalMat));
+            glUniform3f(cameraPosId, cameraPos.x, cameraPos.y, cameraPos.z);
 
-            // Material
-            glUniform3f(matAmbientId, 0.0f, 0.1f, 0.06f);
-            glUniform3f(matDiffuseId, 0.0f, 0.50980392f, 0.50980392f);
-            glUniform3f(matSpecularId, 0.50196078f, 0.50196078f, 0.50196078f);
+
+            glUniform3f(matKaId, 0.0f, 0.1f, 0.06f);
+            glUniform3f(matKdId, 0.0f, 0.50980392f, 0.50980392f);
+            glUniform3f(matKsId, 0.50196078f, 0.50196078f, 0.50196078f);
             glUniform1f(matShineId, 64.0f);
 
-            // Light
-            glUniform3f(lightPosId, lightPos.x, lightPos.y, lightPos.z);
-            glUniform3f(lightAmbientId, lightAmbientColor.r, lightAmbientColor.g, lightAmbientColor.b);
-            glUniform3f(lightDiffuseId, lightDiffuseColor.r, lightDiffuseColor.g, lightDiffuseColor.b);
-            glUniform3f(lightSpecularId, 1.0f, 1.0f, 1.0f);
 
-            glBindVertexArray(objectVao);
+            glBindVertexArray(cubeMeshId);
             glDrawArrays(GL_TRIANGLES, 0, VERTICES.size());
             glBindVertexArray(0);
         }
@@ -194,19 +256,19 @@ int main(int argc, char const *argv[])
         glUseProgram(lampShader);
 
         {
-            auto modelId = glGetUniformLocation(lampShader, "model");
-            auto viewId = glGetUniformLocation(lampShader, "view");
-            auto projectionId = glGetUniformLocation(lampShader, "projection");
+            auto modelId = glGetUniformLocation(lampShader, "Model");
+            auto viewId = glGetUniformLocation(lampShader, "View");
+            auto projectionId = glGetUniformLocation(lampShader, "Projection");
 
             auto model = glm::mat4(1.0f);
-            model = glm::translate(model, lightPos);
+            model = glm::translate(model, light.pos);
             model = glm::scale(model, glm::vec3(0.2f));
 
             glUniformMatrix4fv(modelId, 1, GL_FALSE, glm::value_ptr(model));
             glUniformMatrix4fv(viewId, 1, GL_FALSE, glm::value_ptr(view));
             glUniformMatrix4fv(projectionId, 1, GL_FALSE, glm::value_ptr(projection));
 
-            glBindVertexArray(lampVao);
+            glBindVertexArray(cubeMeshId);
             glDrawArrays(GL_TRIANGLES, 0, VERTICES.size());
             glBindVertexArray(0);
         }
@@ -216,15 +278,12 @@ int main(int argc, char const *argv[])
         glfwSwapBuffers(window);
     }
 
-    glDeleteShader(objectVShader);
-    glDeleteShader(objectFShader);
+
+    // CLEANUP
     glDeleteProgram(objectShader);
-
-    glDeleteShader(lampVShader);
-    glDeleteShader(lampFShader);
     glDeleteProgram(lampShader);
-
     glfwTerminate();
+
 
     return 0;
 }
