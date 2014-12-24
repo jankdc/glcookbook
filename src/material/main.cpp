@@ -152,13 +152,11 @@ int main(int argc, char const *argv[])
 
             auto modelNormalId = glGetUniformLocation(objectShader, "modelNormal");
             auto modelId = glGetUniformLocation(objectShader, "model");
-            auto modelColorId = glGetUniformLocation(objectShader, "modelColor");
             auto viewId = glGetUniformLocation(objectShader, "view");
             auto viewPosId = glGetUniformLocation(objectShader, "viewPos");
             auto projectionId = glGetUniformLocation(objectShader, "projection");
 
             auto model = glm::mat4(1.0f);
-            auto modelColor = glm::vec3(1.0f, 0.5f, 0.31f);
             auto modelRotationAngle = glm::radians(currentFrame * -55.0f);
             auto modelRotationAxis = glm::vec3(1.0f, 0.3f, 0.5f);
             auto modelNormal = glm::mat3(glm::transpose(glm::inverse(model)));
@@ -175,7 +173,6 @@ int main(int argc, char const *argv[])
             glUniformMatrix4fv(viewId, 1, GL_FALSE, glm::value_ptr(view));
             glUniformMatrix4fv(projectionId, 1, GL_FALSE, glm::value_ptr(projection));
             glUniformMatrix3fv(modelNormalId, 1, GL_FALSE, glm::value_ptr(modelNormal));
-            glUniform3f(modelColorId, modelColor.r, modelColor.g, modelColor.b);
             glUniform3f(viewPosId, viewPos.x, viewPos.y, viewPos.z);
 
             // Material

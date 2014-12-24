@@ -21,7 +21,6 @@ layout (location = 0) out vec4 color;
 
 uniform Light light;
 uniform Material material;
-uniform vec3 modelColor;
 uniform vec3 viewPos;
 
 void main()
@@ -35,5 +34,5 @@ void main()
     vec3 kd = light.kd * material.kd * max(dot(n, ld), 0.0f);
     vec3 ks = light.ks * material.ks * pow(max(dot(v, rd), 0.0), material.a);
 
-    color = vec4((ka + kd + ks) * modelColor, 1.0f);
+    color = vec4(ka + kd + ks, 1.0f);
 }
