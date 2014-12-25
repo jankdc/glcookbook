@@ -6,7 +6,7 @@ in vec2 vertexTexture;
 
 struct material {
     sampler2D kd;
-    vec3 ks;
+    sampler2D ks;
     float a;
 };
 
@@ -31,10 +31,11 @@ void main()
     vec3 n  = normalize(vertexNormal);
 
     vec3 kdTex = vec3(texture(Material.kd, vertexTexture));
+    vec3 ksTex = vec3(texture(Material.ks, vertexTexture));
 
     vec3 kd = Light.kd * kdTex * max(dot(n, ld), 0.0f);
     vec3 ka = Light.ka * kd;
-    vec3 ks = Light.ks * Material.ks * pow(max(dot(v, rd), 0.0), Material.a);
+    vec3 ks = Light.ks * ksTex * pow(max(dot(v, rd), 0.0), Material.a);
 
     finalColor = vec4(ka + kd + ks, 1.0f);
 }

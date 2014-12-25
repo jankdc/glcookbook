@@ -133,6 +133,7 @@ int main(int argc, char const *argv[])
     // CUBE MESH VAO + TEXTURE
     auto cubeMeshId = glc::makeMesh(VERTICES);
     auto cubeMeshTex = glc::makeTexture("res/images/box.png");
+    auto cubeMeshSpec = glc::makeTexture("res/images/box_specular.png");
 
 
     // CUBE SHADER
@@ -324,7 +325,7 @@ int main(int argc, char const *argv[])
                 auto material = cube.material;
                 auto position = cube.position;
                 auto model = glm::mat4(1.0f);
-                auto modelRotationAngle = glm::radians(newTime * -55.0f);
+                auto modelRotationAngle = glm::radians(newTime * 55.0f);
                 auto modelRotationAxis = glm::vec3(1.0f, 0.3f, 0.5f);
                 model = glm::translate(model, position);
                 model = glm::rotate(model, modelRotationAngle, modelRotationAxis);
@@ -342,7 +343,11 @@ int main(int argc, char const *argv[])
                 glBindTexture(GL_TEXTURE_2D, cubeMeshTex);
 
 
-                glUniform3f(matKsId, material.ks.r, material.ks.g, material.ks.b);
+                glUniform1f(matKsId, 1);
+                glActiveTexture(GL_TEXTURE1);
+                glBindTexture(GL_TEXTURE_2D, cubeMeshSpec);
+
+
                 glUniform1f(matShineId, material.sh);
 
 
