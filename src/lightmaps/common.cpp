@@ -100,19 +100,23 @@ GLuint glc::makeMesh(std::vector<GLfloat> vertices)
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, vtSize, vtData, GL_STATIC_DRAW);
 
-    auto stride = sizeof(GLfloat) * 6;
+    auto stride = sizeof(GLfloat) * 8;
     auto vertexOff = (GLvoid*)(0);
     auto normalOff = (GLvoid*)(sizeof(GLfloat) * 3);
+    auto texOff = (GLvoid*)(sizeof(GLfloat) * 6);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, vertexOff);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, normalOff);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride, texOff);
 
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
 
     glBindVertexArray(0);
 
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(2);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     return vao;

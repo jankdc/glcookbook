@@ -2,10 +2,10 @@
 
 in vec3 vertexPosition;
 in vec3 vertexNormal;
+in vec2 vertexTexture;
 
 struct material {
-    vec3 ka;
-    vec3 kd;
+    sampler2D kd;
     vec3 ks;
     float a;
 };
@@ -30,8 +30,10 @@ void main()
     vec3 rd = reflect(-ld, vertexNormal);
     vec3 n  = normalize(vertexNormal);
 
-    vec3 ka = Light.ka * Material.ka;
-    vec3 kd = Light.kd * Material.kd * max(dot(n, ld), 0.0f);
+    vec3 kdTex = vec3(texture(Material.kd, vertexTexture));
+
+    vec3 kd = Light.kd * kdTex * max(dot(n, ld), 0.0f);
+    vec3 ka = Light.ka * kd;
     vec3 ks = Light.ks * Material.ks * pow(max(dot(v, rd), 0.0), Material.a);
 
     finalColor = vec4(ka + kd + ks, 1.0f);
