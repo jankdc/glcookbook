@@ -163,3 +163,10 @@ solution "glcookbook"
             "src/lightmaps/**.cpp",
             "src/lightmaps/**.h"
         }
+
+    project "lightcasters"
+        location "build/lightcasters"
+        files {
+            "src/lightcasters/**.cpp",
+            "src/lightcasters/**.h"
+        }
