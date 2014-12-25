@@ -58,33 +58,6 @@ GLuint glc::makeProgram(std::vector<GLuint> shaders)
     return program;
 }
 
-GLuint glc::makeTexture(std::string path)
-{
-    GLuint id;
-    glGenTextures(1, &id);
-
-    fipImage image;
-    image.load(path.c_str());
-    image.convertTo32Bits();
-
-    auto data = image.accessPixels();
-    auto w = image.getWidth();
-    auto h = image.getHeight();
-
-    auto minSetting = GL_LINEAR_MIPMAP_LINEAR;
-    auto magSetting = GL_LINEAR;
-
-    glBindTexture(GL_TEXTURE_2D,id);
-    glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,w,h,0,GL_BGRA,GL_UNSIGNED_BYTE,data);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,minSetting);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,magSetting);
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    image.clear();
-
-    return id;
-}
-
 GLuint glc::makeMesh(std::vector<GLfloat> vertices)
 {
     GLuint vbo;

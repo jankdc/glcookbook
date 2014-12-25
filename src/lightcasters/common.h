@@ -8,7 +8,6 @@
 #include <vector>
 
 namespace glc {
-
     void printErr(int code, const char* desc);
     void printShaderStatus(GLuint shader);
     std::string makeString(std::string path);
@@ -16,9 +15,7 @@ namespace glc {
     GLuint makeShader(GLenum shaderType, std::string text);
     GLuint makeVShader(std::string path);
     GLuint makeFShader(std::string path);
-    GLuint makeTexture(std::string path);
     GLuint makeProgram(std::vector<GLuint> shaders);
-
 }
 
 

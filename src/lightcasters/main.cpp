@@ -1,5 +1,6 @@
 #include "camera.h"
 #include "common.h"
+#include "texture.h"
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -129,11 +130,13 @@ int main(int argc, char const *argv[])
 
     */
 
+    auto texLoader = glc::TexLoader();
+
 
     // CUBE MESH VAO + TEXTURE
     auto cubeMeshId = glc::makeMesh(VERTICES);
-    auto cubeMeshTex = glc::makeTexture("res/images/box.png");
-    auto cubeMeshSpec = glc::makeTexture("res/images/box_specular.png");
+    auto cubeMeshTex = texLoader.load("res/images/box.png");
+    auto cubeMeshSpec = texLoader.load("res/images/box_specular.png");
 
 
     // CUBE SHADER
@@ -315,46 +318,45 @@ int main(int argc, char const *argv[])
             auto normalMatId  = glGetUniformLocation(objectShader, "Normal");
             auto cameraPosId  = glGetUniformLocation(objectShader, "CameraPosition");
             auto cameraPos = camera.getPosition();
+
             glUniform3f(lightPosId, light.pos.x, light.pos.y, light.pos.z);
             glUniform3f(lightKaId, light.ka.r, light.ka.g, light.ka.b);
             glUniform3f(lightKdId, light.kd.r, light.kd.g, light.kd.b);
             glUniform3f(lightKsId, 1.0f, 1.0f, 1.0f);
 
+            glUniformMatrix4fv(viewId, 1, GL_FALSE, glm::value_ptr(view));
+            glUniformMatrix4fv(projectionId, 1, GL_FALSE, glm::value_ptr(projection));
+            glUniform3f(cameraPosId, cameraPos.x, cameraPos.y, cameraPos.z);
 
+            glUniform1f(matKdId, 0);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, cubeMeshTex);
+
+            glUniform1f(matKsId, 1);
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, cubeMeshSpec);
+
+            glUniform1f(matShineId, 64.0f);
+
+            glBindVertexArray(cubeMeshId);
             for (auto cube : cubes) {
-                auto material = cube.material;
                 auto position = cube.position;
                 auto model = glm::mat4(1.0f);
-                auto modelRotationAngle = glm::radians(newTime * 55.0f);
+                auto modelRotationAngle = glm::radians(-55.0f);
                 auto modelRotationAxis = glm::vec3(1.0f, 0.3f, 0.5f);
                 model = glm::translate(model, position);
                 model = glm::rotate(model, modelRotationAngle, modelRotationAxis);
                 auto normalMat = glm::mat3(glm::transpose(glm::inverse(model)));
-
-                glUniformMatrix4fv(modelId, 1, GL_FALSE, glm::value_ptr(model));
-                glUniformMatrix4fv(viewId, 1, GL_FALSE, glm::value_ptr(view));
-                glUniformMatrix4fv(projectionId, 1, GL_FALSE, glm::value_ptr(projection));
                 glUniformMatrix3fv(normalMatId, 1, GL_FALSE, glm::value_ptr(normalMat));
-                glUniform3f(cameraPosId, cameraPos.x, cameraPos.y, cameraPos.z);
-
-
-                glUniform1f(matKdId, 0);
-                glActiveTexture(GL_TEXTURE0);
-                glBindTexture(GL_TEXTURE_2D, cubeMeshTex);
-
-
-                glUniform1f(matKsId, 1);
-                glActiveTexture(GL_TEXTURE1);
-                glBindTexture(GL_TEXTURE_2D, cubeMeshSpec);
-
-
-                glUniform1f(matShineId, material.sh);
-
-
-                glBindVertexArray(cubeMeshId);
+                glUniformMatrix4fv(modelId, 1, GL_FALSE, glm::value_ptr(model));
                 glDrawArrays(GL_TRIANGLES, 0, VERTICES.size());
-                glBindVertexArray(0);
             }
+            glBindVertexArray(0);
+
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, 0);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, 0);
         }
 
         glUseProgram(lampShader);
