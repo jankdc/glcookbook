@@ -17,6 +17,7 @@ struct slight {
     vec3 kd;
     vec3 ks;
     float cutOffAngle;
+    float cutInAngle;
 };
 
 struct dlight {
@@ -107,20 +108,18 @@ vec3 getSpotLight(slight light, vec3 normal, vec3 viewDir, vec3 fragPos)
     vec3 reflectDir = reflect(-lightDir, normal);
 
     float theta = dot(lightDir, normalize(-light.spotDir));
+    float epsilon = light.cutInAngle - light.cutOffAngle;
+    float fadeRate = clamp((theta - light.cutOffAngle) / epsilon, 0.0f, 1.0f);
 
     vec3 diffuseMap = vec3(texture(Material.kd, vertexTexture));
     vec3 specularMap = vec3(texture(Material.ks, vertexTexture));
-
-    if (theta <= light.cutOffAngle) {
-        return (light.ka * diffuseMap);
-    }
 
     float color = max(dot(normal, lightDir), 0.0f);
     float intensity = pow(max(dot(viewDir, reflectDir), 0.0), Material.a);
 
     vec3 ka = light.ka * diffuseMap;
-    vec3 kd = light.kd * diffuseMap * color;
-    vec3 ks = light.ks * specularMap * intensity;
+    vec3 kd = light.kd * diffuseMap * color * fadeRate;
+    vec3 ks = light.ks * specularMap * intensity * fadeRate;
 
     return (ka + kd + ks);
 }

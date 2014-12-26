@@ -327,7 +327,8 @@ int main(int argc, char const *argv[])
             auto slightKsId = glGetUniformLocation(objectShader, "SLight.ks");
             auto slightDirId = glGetUniformLocation(objectShader, "SLight.spotDir");
             auto slightPosId = glGetUniformLocation(objectShader, "SLight.position");
-            auto slightCutId = glGetUniformLocation(objectShader, "SLight.cutOffAngle");
+            auto slightCutOffId = glGetUniformLocation(objectShader, "SLight.cutOffAngle");
+            auto slightCutInId = glGetUniformLocation(objectShader, "SLight.cutInAngle");
 
             auto modelId = glGetUniformLocation(objectShader, "Model");
             auto viewId  = glGetUniformLocation(objectShader, "View");
@@ -355,7 +356,8 @@ int main(int argc, char const *argv[])
             glUniform3f(slightKaId, light.ka.r, light.ka.g, light.ka.b);
             glUniform3f(slightKdId, light.kd.r, light.kd.g, light.kd.b);
             glUniform3f(slightKsId, 1.0f, 1.0f, 1.0f);
-            glUniform1f(slightCutId, glm::cos(glm::radians(12.5f)));
+            glUniform1f(slightCutInId, glm::cos(glm::radians(12.5f)));
+            glUniform1f(slightCutOffId, glm::cos(glm::radians(17.5f)));
 
             glUniformMatrix4fv(viewId, 1, GL_FALSE, glm::value_ptr(view));
             glUniformMatrix4fv(projectionId, 1, GL_FALSE, glm::value_ptr(projection));
