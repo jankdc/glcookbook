@@ -44,7 +44,7 @@ namespace glc {
             std::unordered_map<std::string, GLuint> shaders,
             std::unordered_map<std::string, GLuint> textures);
         void setup();
-        void update();
+        void update(float diftime);
     private:
         GLFWwindow* m_window;
         glc::Camera m_camera;
@@ -52,8 +52,23 @@ namespace glc {
         std::unordered_map<std::string, GLuint> m_shaders;
         std::unordered_map<std::string, GLuint> m_textures;
         glc::Light m_light;
-        float m_delta;
-        float m_oldTime;
+    };
+
+    class BioScene {
+    public:
+        BioScene(GLFWwindow* window,
+            std::unordered_map<std::string, glc::Mesh> meshes,
+            std::unordered_map<std::string, GLuint> shaders,
+            std::unordered_map<std::string, GLuint> textures);
+        void setup();
+        void update(float diftime);
+    private:
+        GLFWwindow* m_window;
+        glc::Camera m_camera;
+        std::unordered_map<std::string, glc::Mesh> m_meshes;
+        std::unordered_map<std::string, GLuint> m_shaders;
+        std::unordered_map<std::string, GLuint> m_textures;
+        glc::Light m_light;
     };
 
 }

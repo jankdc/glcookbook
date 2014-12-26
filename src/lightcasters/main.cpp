@@ -11,6 +11,7 @@
 
 #include <vector>
 #include <unordered_map>
+#include <iostream>
 
 
 const auto WINDOW_WIDTH  = 800;
@@ -157,9 +158,11 @@ int main(int argc, char const *argv[])
     };
 
 
-    auto basicScene = glc::BasicScene(window, meshes, shaders, textures);
-    basicScene.setup();
+    auto scene01 = glc::BasicScene(window, meshes, shaders, textures);
+    scene01.setup();
 
+    auto scene02 = glc::BioScene(window, meshes, shaders, textures);
+    scene02.setup();
 
     /*
      __  __          _____ _   _   _      ____   ____  _____
@@ -171,15 +174,29 @@ int main(int argc, char const *argv[])
 
     */
 
+    auto newtime = 0.0f;
+    auto oldtime = 0.0f;
+    auto diftime = 0.0f;
+
     while (! glfwWindowShouldClose(window))
     {
+        newtime = static_cast<float>(glfwGetTime());
+        diftime = glm::max(newtime - oldtime, 0.0f);
+        oldtime = newtime;
+
         glfwPollEvents();
 
         if (glfwGetKey(window, GLFW_KEY_ESCAPE)) {
             glfwSetWindowShouldClose(window, GL_TRUE);
         }
 
-        basicScene.update();
+        if (glfwGetKey(window, GLFW_KEY_B)) {
+            scene02.update(diftime);
+        } else {
+            scene01.update(diftime);
+        }
+
+        glfwSwapBuffers(window);
     }
 
 

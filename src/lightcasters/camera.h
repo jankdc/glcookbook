@@ -25,17 +25,17 @@ namespace glc {
         glm::mat4 generateMat() const;
     private:
         GLFWwindow* m_window;
-        GLfloat m_pitch;
-        GLfloat m_yaw;
-        GLfloat m_sensitivity;
-        GLfloat m_speed;
+        float m_pitch;
+        float m_yaw;
+        float m_sensitivity;
+        float m_speed;
         glm::vec3 m_position;
         glm::vec3 m_direction;
         glm::vec3 m_up;
         glm::vec3 m_right;
         glm::vec3 m_worldUp;
-        GLfloat m_lastX;
-        GLfloat m_lastY;
+        double m_lastX;
+        double m_lastY;
         GLboolean m_moved;
     };
 
