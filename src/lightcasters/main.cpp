@@ -308,10 +308,10 @@ int main(int argc, char const *argv[])
             auto matKdId = glGetUniformLocation(objectShader, "Material.kd");
             auto matKsId = glGetUniformLocation(objectShader, "Material.ks");
             auto matShineId = glGetUniformLocation(objectShader, "Material.a");
-            auto lightKaId = glGetUniformLocation(objectShader, "Light.ka");
-            auto lightKdId = glGetUniformLocation(objectShader, "Light.kd");
-            auto lightKsId = glGetUniformLocation(objectShader, "Light.ks");
-            auto lightPosId = glGetUniformLocation(objectShader, "Light.position");
+            auto lightKaId = glGetUniformLocation(objectShader, "DLight.ka");
+            auto lightKdId = glGetUniformLocation(objectShader, "DLight.kd");
+            auto lightKsId = glGetUniformLocation(objectShader, "DLight.ks");
+            auto lightDirId = glGetUniformLocation(objectShader, "DLight.direction");
             auto modelId = glGetUniformLocation(objectShader, "Model");
             auto viewId  = glGetUniformLocation(objectShader, "View");
             auto projectionId = glGetUniformLocation(objectShader, "Projection");
@@ -319,7 +319,7 @@ int main(int argc, char const *argv[])
             auto cameraPosId  = glGetUniformLocation(objectShader, "CameraPosition");
             auto cameraPos = camera.getPosition();
 
-            glUniform3f(lightPosId, light.pos.x, light.pos.y, light.pos.z);
+            glUniform3f(lightDirId, -0.2f, -1.0f, -0.3f);
             glUniform3f(lightKaId, light.ka.r, light.ka.g, light.ka.b);
             glUniform3f(lightKdId, light.kd.r, light.kd.g, light.kd.b);
             glUniform3f(lightKsId, 1.0f, 1.0f, 1.0f);
