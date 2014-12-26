@@ -125,7 +125,7 @@ void glc::BasicScene::update()
         0.1f,
         1000.0f);
 
-    glClearColor(0.15f, 0.15f, 0.15f, 1.0f);
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     auto cubeShader = m_shaders.at("cube");
