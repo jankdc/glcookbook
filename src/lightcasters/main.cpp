@@ -166,7 +166,7 @@ int main(int argc, char const *argv[])
 
     // LIGHT SOURCE
     auto light = Light();
-    light.ka  = glm::vec3(0.5f);
+    light.ka  = glm::vec3(0.2f);
     light.kd  = glm::vec3(1.0f);
     light.ks  = glm::vec3(1.0f);
     light.pos = glm::vec3(1.2f, 1.0f, 2.0f);
@@ -308,10 +308,20 @@ int main(int argc, char const *argv[])
             auto matKdId = glGetUniformLocation(objectShader, "Material.kd");
             auto matKsId = glGetUniformLocation(objectShader, "Material.ks");
             auto matShineId = glGetUniformLocation(objectShader, "Material.a");
-            auto lightKaId = glGetUniformLocation(objectShader, "DLight.ka");
-            auto lightKdId = glGetUniformLocation(objectShader, "DLight.kd");
-            auto lightKsId = glGetUniformLocation(objectShader, "DLight.ks");
-            auto lightDirId = glGetUniformLocation(objectShader, "DLight.direction");
+
+            auto dlightKaId = glGetUniformLocation(objectShader, "DLight.ka");
+            auto dlightKdId = glGetUniformLocation(objectShader, "DLight.kd");
+            auto dlightKsId = glGetUniformLocation(objectShader, "DLight.ks");
+            auto dlightDirId = glGetUniformLocation(objectShader, "DLight.direction");
+
+            auto plightPosId = glGetUniformLocation(objectShader, "PLight.position");
+            auto plightKaId = glGetUniformLocation(objectShader, "PLight.ka");
+            auto plightKdId = glGetUniformLocation(objectShader, "PLight.kd");
+            auto plightKsId = glGetUniformLocation(objectShader, "PLight.ks");
+            auto plightKcId = glGetUniformLocation(objectShader, "PLight.kc");
+            auto plightKlId = glGetUniformLocation(objectShader, "PLight.kl");
+            auto plightKqId = glGetUniformLocation(objectShader, "PLight.kq");
+
             auto modelId = glGetUniformLocation(objectShader, "Model");
             auto viewId  = glGetUniformLocation(objectShader, "View");
             auto projectionId = glGetUniformLocation(objectShader, "Projection");
@@ -319,10 +329,18 @@ int main(int argc, char const *argv[])
             auto cameraPosId  = glGetUniformLocation(objectShader, "CameraPosition");
             auto cameraPos = camera.getPosition();
 
-            glUniform3f(lightDirId, -0.2f, -1.0f, -0.3f);
-            glUniform3f(lightKaId, light.ka.r, light.ka.g, light.ka.b);
-            glUniform3f(lightKdId, light.kd.r, light.kd.g, light.kd.b);
-            glUniform3f(lightKsId, 1.0f, 1.0f, 1.0f);
+            glUniform3f(dlightDirId, -0.2f, -1.0f, -0.3f);
+            glUniform3f(dlightKaId, 0.2f, 0.2f, 0.2f);
+            glUniform3f(dlightKdId, light.kd.r, light.kd.g, light.kd.b);
+            glUniform3f(dlightKsId, 1.0f, 1.0f, 1.0f);
+
+            glUniform3f(plightPosId, light.pos.x, light.pos.y, light.pos.z);
+            glUniform3f(plightKaId, light.ka.r, light.ka.g, light.ka.b);
+            glUniform3f(plightKdId, light.kd.r, light.kd.g, light.kd.b);
+            glUniform3f(plightKsId, 1.0f, 1.0f, 1.0f);
+            glUniform1f(plightKcId, 1.0f);
+            glUniform1f(plightKlId, 0.09f);
+            glUniform1f(plightKqId, 0.032f);
 
             glUniformMatrix4fv(viewId, 1, GL_FALSE, glm::value_ptr(view));
             glUniformMatrix4fv(projectionId, 1, GL_FALSE, glm::value_ptr(projection));
