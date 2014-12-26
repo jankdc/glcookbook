@@ -1,6 +1,5 @@
 #include "camera.h"
 #include "common.h"
-#include "texture.h"
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -204,13 +203,11 @@ int main(int argc, char const *argv[])
 
     */
 
-    auto texLoader = glc::TexLoader();
-
 
     // CUBE MESH VAO + TEXTURE
     auto cubeMeshId = glc::makeMesh(VERTICES);
-    auto cubeMeshTex = texLoader.load("res/images/box.png");
-    auto cubeMeshSpec = texLoader.load("res/images/box_specular.png");
+    auto cubeMeshTex = glc::makeTexture("res/images/box.png");
+    auto cubeMeshSpec = glc::makeTexture("res/images/box_specular.png");
 
 
     // CUBE SHADER
@@ -266,7 +263,7 @@ int main(int argc, char const *argv[])
         glfwPollEvents();
 
         newTime = static_cast<float>(glfwGetTime());
-        delta   = newTime-oldTime;
+        delta   = glm::max(newTime-oldTime, 0.0f);
         oldTime = newTime;
 
         if (glfwGetKey(window, GLFW_KEY_ESCAPE)) {
