@@ -21,6 +21,7 @@ namespace glc {
         void setMovementSpeed(float speed);
         void setSensitivity(float sensitivity);
         glm::vec3 getPosition() const;
+        glm::vec3 getDirection() const;
         glm::mat4 generateMat() const;
     private:
         GLFWwindow* m_window;

@@ -10,6 +10,15 @@ struct material {
     float a;
 };
 
+struct slight {
+    vec3 position;
+    vec3 spotDir;
+    vec3 ka;
+    vec3 kd;
+    vec3 ks;
+    float cutOffAngle;
+};
+
 struct dlight {
     vec3 direction;
     vec3 ka;
@@ -30,7 +39,9 @@ struct plight {
 
 vec3 getDirLight(dlight light, vec3 normal, vec3 viewDir);
 vec3 getPointLight(plight light, vec3 normal, vec3 viewDir, vec3 fragPos);
+vec3 getSpotLight(slight light, vec3 normal, vec3 viewDir, vec3 fragPos);
 
+uniform slight SLight;
 uniform plight PLight;
 uniform dlight DLight;
 uniform material Material;
@@ -46,6 +57,7 @@ void main()
     vec3 res = vec3(0.0f);
     res += getDirLight(DLight, normal, viewDir);
     res += getPointLight(PLight, normal, viewDir, vertexPosition);
+    res += getSpotLight(SLight, normal, viewDir, vertexPosition);
 
     finalColor = vec4(res, 1.0f);
 }
@@ -85,6 +97,30 @@ vec3 getPointLight(plight light, vec3 normal, vec3 viewDir, vec3 fragPos)
     vec3 ka = light.ka * diffuseMap * atten;
     vec3 kd = light.kd * diffuseMap * color * atten;
     vec3 ks = light.ks * specularMap * intensity * atten;
+
+    return (ka + kd + ks);
+}
+
+vec3 getSpotLight(slight light, vec3 normal, vec3 viewDir, vec3 fragPos)
+{
+    vec3 lightDir = normalize(light.position - fragPos);
+    vec3 reflectDir = reflect(-lightDir, normal);
+
+    float theta = dot(lightDir, normalize(-light.spotDir));
+
+    vec3 diffuseMap = vec3(texture(Material.kd, vertexTexture));
+    vec3 specularMap = vec3(texture(Material.ks, vertexTexture));
+
+    if (theta <= light.cutOffAngle) {
+        return (light.ka * diffuseMap);
+    }
+
+    float color = max(dot(normal, lightDir), 0.0f);
+    float intensity = pow(max(dot(viewDir, reflectDir), 0.0), Material.a);
+
+    vec3 ka = light.ka * diffuseMap;
+    vec3 kd = light.kd * diffuseMap * color;
+    vec3 ks = light.ks * specularMap * intensity;
 
     return (ka + kd + ks);
 }

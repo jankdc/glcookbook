@@ -166,7 +166,7 @@ int main(int argc, char const *argv[])
 
     // LIGHT SOURCE
     auto light = Light();
-    light.ka  = glm::vec3(0.2f);
+    light.ka  = glm::vec3(0.1f);
     light.kd  = glm::vec3(1.0f);
     light.ks  = glm::vec3(1.0f);
     light.pos = glm::vec3(1.2f, 1.0f, 2.0f);
@@ -322,15 +322,23 @@ int main(int argc, char const *argv[])
             auto plightKlId = glGetUniformLocation(objectShader, "PLight.kl");
             auto plightKqId = glGetUniformLocation(objectShader, "PLight.kq");
 
+            auto slightKaId = glGetUniformLocation(objectShader, "SLight.ka");
+            auto slightKdId = glGetUniformLocation(objectShader, "SLight.kd");
+            auto slightKsId = glGetUniformLocation(objectShader, "SLight.ks");
+            auto slightDirId = glGetUniformLocation(objectShader, "SLight.spotDir");
+            auto slightPosId = glGetUniformLocation(objectShader, "SLight.position");
+            auto slightCutId = glGetUniformLocation(objectShader, "SLight.cutOffAngle");
+
             auto modelId = glGetUniformLocation(objectShader, "Model");
             auto viewId  = glGetUniformLocation(objectShader, "View");
             auto projectionId = glGetUniformLocation(objectShader, "Projection");
             auto normalMatId  = glGetUniformLocation(objectShader, "Normal");
             auto cameraPosId  = glGetUniformLocation(objectShader, "CameraPosition");
             auto cameraPos = camera.getPosition();
+            auto cameraDir = camera.getDirection();
 
             glUniform3f(dlightDirId, -0.2f, -1.0f, -0.3f);
-            glUniform3f(dlightKaId, 0.2f, 0.2f, 0.2f);
+            glUniform3f(dlightKaId, 0.1f, 0.1f, 0.1f);
             glUniform3f(dlightKdId, light.kd.r, light.kd.g, light.kd.b);
             glUniform3f(dlightKsId, 1.0f, 1.0f, 1.0f);
 
@@ -341,6 +349,13 @@ int main(int argc, char const *argv[])
             glUniform1f(plightKcId, 1.0f);
             glUniform1f(plightKlId, 0.09f);
             glUniform1f(plightKqId, 0.032f);
+
+            glUniform3f(slightPosId, cameraPos.x, cameraPos.y, cameraPos.z);
+            glUniform3f(slightDirId, cameraDir.x, cameraDir.y, cameraDir.z);
+            glUniform3f(slightKaId, light.ka.r, light.ka.g, light.ka.b);
+            glUniform3f(slightKdId, light.kd.r, light.kd.g, light.kd.b);
+            glUniform3f(slightKsId, 1.0f, 1.0f, 1.0f);
+            glUniform1f(slightCutId, glm::cos(glm::radians(12.5f)));
 
             glUniformMatrix4fv(viewId, 1, GL_FALSE, glm::value_ptr(view));
             glUniformMatrix4fv(projectionId, 1, GL_FALSE, glm::value_ptr(projection));

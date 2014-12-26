@@ -105,6 +105,11 @@ glm::vec3 glc::Camera::getPosition() const
     return m_position;
 }
 
+glm::vec3 glc::Camera::getDirection() const
+{
+    return m_direction;
+}
+
 glm::mat4 glc::Camera::generateMat() const
 {
     return glm::lookAt(m_position, m_position + m_direction, m_worldUp);
