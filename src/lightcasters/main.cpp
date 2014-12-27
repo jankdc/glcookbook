@@ -186,14 +186,26 @@ int main(int argc, char const *argv[])
 
         glfwPollEvents();
 
+        auto currentScene = glc::SceneType::BASIC;
+
         if (glfwGetKey(window, GLFW_KEY_ESCAPE)) {
             glfwSetWindowShouldClose(window, GL_TRUE);
         }
 
         if (glfwGetKey(window, GLFW_KEY_B)) {
-            scene02.update(diftime);
-        } else {
-            scene01.update(diftime);
+            currentScene = glc::SceneType::BIO;
+        }
+
+        scene01.update(diftime);
+        scene02.update(diftime);
+
+        switch (currentScene) {
+            case glc::SceneType::BASIC:
+                scene01.draw();
+                break;
+            case glc::SceneType::BIO:
+                scene02.draw();
+                break;
         }
 
         glfwSwapBuffers(window);

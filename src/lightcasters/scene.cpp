@@ -108,18 +108,22 @@ void glc::BasicScene::setup()
 
 void glc::BasicScene::update(float diftime)
 {
+    auto width = 0, height = 0;
+    glfwGetWindowSize(m_window, &width, &height);
+
     m_camera.update(diftime);
     m_light.pos.x = 1.0f + sinf(glfwGetTime()) * 2.0f;
     m_light.pos.y = sinf(glfwGetTime() / 2.0f) * 1.0f;
-
-    auto view = m_camera.generateMat();
-    auto width = 0, height = 0;
-    glfwGetWindowSize(m_window, &width, &height);
-    auto projection = glm::perspective(
+    m_projection = glm::perspective(
         45.0f,
         static_cast<float>(width)/static_cast<float>(height),
         0.1f,
         1000.0f);
+}
+
+void glc::BasicScene::draw()
+{
+    auto view = m_camera.generateMat();
 
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -183,7 +187,7 @@ void glc::BasicScene::update(float diftime)
         glUniform1f(slightCutOffId, glm::cos(glm::radians(17.5f)));
 
         glUniformMatrix4fv(viewId, 1, GL_FALSE, glm::value_ptr(view));
-        glUniformMatrix4fv(projectionId, 1, GL_FALSE, glm::value_ptr(projection));
+        glUniformMatrix4fv(projectionId, 1, GL_FALSE, glm::value_ptr(m_projection));
         glUniform3f(cameraPosId, cameraPos.x, cameraPos.y, cameraPos.z);
 
         glUniform1f(matKdId, 0);
@@ -232,7 +236,7 @@ void glc::BasicScene::update(float diftime)
 
         glUniformMatrix4fv(modelId, 1, GL_FALSE, glm::value_ptr(model));
         glUniformMatrix4fv(viewId, 1, GL_FALSE, glm::value_ptr(view));
-        glUniformMatrix4fv(projectionId, 1, GL_FALSE, glm::value_ptr(projection));
+        glUniformMatrix4fv(projectionId, 1, GL_FALSE, glm::value_ptr(m_projection));
 
         glUniform3f(mainColorId, m_light.kd.r, m_light.kd.g, m_light.kd.b);
 
@@ -243,7 +247,6 @@ void glc::BasicScene::update(float diftime)
 
     glUseProgram(0);
 }
-
 
 glc::BioScene::BioScene(GLFWwindow* window,
     std::unordered_map<std::string, glc::Mesh> meshes,
@@ -270,18 +273,22 @@ void glc::BioScene::setup()
 
 void glc::BioScene::update(float diftime)
 {
+    auto width = 0, height = 0;
+    glfwGetWindowSize(m_window, &width, &height);
+
     m_camera.update(diftime);
     m_light.pos.x = 1.0f + sinf(glfwGetTime()) * 2.0f;
     m_light.pos.y = sinf(glfwGetTime() / 2.0f) * 1.0f;
-
-    auto view = m_camera.generateMat();
-    auto width = 0, height = 0;
-    glfwGetWindowSize(m_window, &width, &height);
-    auto projection = glm::perspective(
+    m_projection = glm::perspective(
         45.0f,
         static_cast<float>(width)/static_cast<float>(height),
         0.1f,
         1000.0f);
+}
+
+void glc::BioScene::draw()
+{
+    auto view = m_camera.generateMat();
 
     glClearColor(0.9f, 0.9f, 0.9f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -345,7 +352,7 @@ void glc::BioScene::update(float diftime)
         glUniform1f(slightCutOffId, glm::cos(glm::radians(17.5f)));
 
         glUniformMatrix4fv(viewId, 1, GL_FALSE, glm::value_ptr(view));
-        glUniformMatrix4fv(projectionId, 1, GL_FALSE, glm::value_ptr(projection));
+        glUniformMatrix4fv(projectionId, 1, GL_FALSE, glm::value_ptr(m_projection));
         glUniform3f(cameraPosId, cameraPos.x, cameraPos.y, cameraPos.z);
 
         glUniform1f(matKdId, 0);
@@ -394,7 +401,7 @@ void glc::BioScene::update(float diftime)
 
         glUniformMatrix4fv(modelId, 1, GL_FALSE, glm::value_ptr(model));
         glUniformMatrix4fv(viewId, 1, GL_FALSE, glm::value_ptr(view));
-        glUniformMatrix4fv(projectionId, 1, GL_FALSE, glm::value_ptr(projection));
+        glUniformMatrix4fv(projectionId, 1, GL_FALSE, glm::value_ptr(m_projection));
 
         glUniform3f(mainColorId, m_light.kd.r, m_light.kd.g, m_light.kd.b);
 

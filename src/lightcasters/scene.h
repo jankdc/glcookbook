@@ -37,6 +37,11 @@ namespace glc {
         glm::vec3 position;
     };
 
+    enum class SceneType {
+        BASIC,
+        BIO
+    };
+
     class BasicScene {
     public:
         BasicScene(GLFWwindow* window,
@@ -45,6 +50,7 @@ namespace glc {
             std::unordered_map<std::string, GLuint> textures);
         void setup();
         void update(float diftime);
+        void draw();
     private:
         GLFWwindow* m_window;
         glc::Camera m_camera;
@@ -52,6 +58,7 @@ namespace glc {
         std::unordered_map<std::string, GLuint> m_shaders;
         std::unordered_map<std::string, GLuint> m_textures;
         glc::Light m_light;
+        glm::mat4 m_projection;
     };
 
     class BioScene {
@@ -62,6 +69,7 @@ namespace glc {
             std::unordered_map<std::string, GLuint> textures);
         void setup();
         void update(float diftime);
+        void draw();
     private:
         GLFWwindow* m_window;
         glc::Camera m_camera;
@@ -69,6 +77,7 @@ namespace glc {
         std::unordered_map<std::string, GLuint> m_shaders;
         std::unordered_map<std::string, GLuint> m_textures;
         glc::Light m_light;
+        glm::mat4 m_projection;
     };
 
 }
