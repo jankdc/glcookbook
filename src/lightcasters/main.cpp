@@ -157,6 +157,8 @@ int main(int argc, char const *argv[])
     auto scene02 = glc::BioScene(window, meshes, shaders, textures);
     scene02.setup();
 
+    auto currentScene = glc::SceneType::BASIC;
+
     /*
      __  __          _____ _   _   _      ____   ____  _____
     |  \/  |   /\   |_   _| \ | | | |    / __ \ / __ \|  __ \
@@ -179,13 +181,15 @@ int main(int argc, char const *argv[])
 
         glfwPollEvents();
 
-        auto currentScene = glc::SceneType::BASIC;
-
         if (glfwGetKey(window, GLFW_KEY_ESCAPE)) {
             glfwSetWindowShouldClose(window, GL_TRUE);
         }
 
         if (glfwGetKey(window, GLFW_KEY_B)) {
+            currentScene = glc::SceneType::BASIC;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_O)) {
             currentScene = glc::SceneType::BIO;
         }
 
