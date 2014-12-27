@@ -3,9 +3,9 @@
 #ifndef GLC_CAMERA_H
 #define GLC_CAMERA_H
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
+
+struct GLFWwindow;
 
 namespace glc {
 
@@ -36,7 +36,7 @@ namespace glc {
         glm::vec3 m_worldUp;
         double m_lastX;
         double m_lastY;
-        GLboolean m_moved;
+        bool m_moved;
     };
 
 }

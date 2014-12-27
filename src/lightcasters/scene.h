@@ -4,12 +4,12 @@
 #define GLC_SCENE_H
 
 #include <GL/glew.h>
-#include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
-
 #include <unordered_map>
 #include <vector>
 #include <string>
+
+struct GLFWwindow;
 
 namespace glc {
 

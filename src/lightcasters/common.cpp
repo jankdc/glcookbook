@@ -1,11 +1,7 @@
 #include "common.h"
-
-#include <GL/glew.h>
 #include <FreeImagePlus.h>
 #include <iostream>
 #include <fstream>
-#include <string>
-#include <vector>
 
 void glc::printErr(int code, const char* desc)
 {
