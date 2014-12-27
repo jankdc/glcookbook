@@ -170,3 +170,10 @@ solution "glcookbook"
             "src/lightcasters/**.cpp",
             "src/lightcasters/**.h"
         }
+
+    project "models"
+        location "build/models"
+        files {
+            "src/models/**.cpp",
+            "src/models/**.h"
+        }
