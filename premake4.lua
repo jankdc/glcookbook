@@ -32,6 +32,8 @@ solution "glcookbook"
             os.findlib("freeimageplus")
         }
 
+        flags {"Symbols"}
+
         links {
             "freeimageplus"
         }
@@ -78,7 +80,6 @@ solution "glcookbook"
         targetdir "out/debug"
         objdir "out/debug/obj"
         kind "ConsoleApp"
-        flags {"Symbols"}
 
     project "window_creation"
         location "build/window_creation"
