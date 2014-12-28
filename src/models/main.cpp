@@ -5,6 +5,7 @@
 #include <GLFW/glfw3.h>
 #include <vector>
 #include <unordered_map>
+#include <iostream>
 
 
 const auto WINDOW_WIDTH  = 800;
@@ -157,6 +158,9 @@ int main(int argc, char const *argv[])
     auto scene02 = glc::BioScene(window, meshes, shaders, textures);
     scene02.setup();
 
+    auto scene03 = glc::NanoScene(window, meshes, shaders, textures);
+    scene03.setup();
+
     auto currentScene = glc::SceneType::BASIC;
 
     /*
@@ -193,8 +197,13 @@ int main(int argc, char const *argv[])
             currentScene = glc::SceneType::BIO;
         }
 
+        if (glfwGetKey(window, GLFW_KEY_N)) {
+            currentScene = glc::SceneType::NANO;
+        }
+
         scene01.update(diftime);
         scene02.update(diftime);
+        scene03.update(diftime);
 
         switch (currentScene) {
             case glc::SceneType::BASIC:
@@ -202,6 +211,9 @@ int main(int argc, char const *argv[])
                 break;
             case glc::SceneType::BIO:
                 scene02.draw();
+                break;
+            case glc::SceneType::NANO:
+                scene03.draw();
                 break;
         }
 

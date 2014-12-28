@@ -5,8 +5,8 @@ in vec3 vertexNormal;
 in vec2 vertexTexture;
 
 struct material {
-    sampler2D kd;
-    sampler2D ks;
+    sampler2D texture_diffuse1;
+    sampler2D texture_specular1;
     float a;
 };
 
@@ -68,8 +68,8 @@ vec3 getDirLight(dlight light, vec3 normal, vec3 viewDir)
     vec3 lightDir = normalize(-light.direction);
     vec3 reflectDir = reflect(-lightDir, normal);
 
-    vec3 diffuseMap = vec3(texture(Material.kd, vertexTexture));
-    vec3 specularMap = vec3(texture(Material.ks, vertexTexture));
+    vec3 diffuseMap = vec3(texture(Material.texture_diffuse1, vertexTexture));
+    vec3 specularMap = vec3(texture(Material.texture_specular1, vertexTexture));
 
     float color = max(dot(normal, lightDir), 0.0f);
     float intensity = pow(max(dot(viewDir, reflectDir), 0.0), Material.a);
@@ -86,8 +86,8 @@ vec3 getPointLight(plight light, vec3 normal, vec3 viewDir, vec3 fragPos)
     vec3 lightDir = normalize(light.position - fragPos);
     vec3 reflectDir = reflect(-lightDir, normal);
 
-    vec3 diffuseMap = vec3(texture(Material.kd, vertexTexture));
-    vec3 specularMap = vec3(texture(Material.ks, vertexTexture));
+    vec3 diffuseMap = vec3(texture(Material.texture_diffuse1, vertexTexture));
+    vec3 specularMap = vec3(texture(Material.texture_specular1, vertexTexture));
 
     float color = max(dot(normal, lightDir), 0.0f);
     float intensity = pow(max(dot(viewDir, reflectDir), 0.0), Material.a);
@@ -111,8 +111,8 @@ vec3 getSpotLight(slight light, vec3 normal, vec3 viewDir, vec3 fragPos)
     float epsilon = light.cutInAngle - light.cutOffAngle;
     float fadeRate = clamp((theta - light.cutOffAngle) / epsilon, 0.0f, 1.0f);
 
-    vec3 diffuseMap = vec3(texture(Material.kd, vertexTexture));
-    vec3 specularMap = vec3(texture(Material.ks, vertexTexture));
+    vec3 diffuseMap = vec3(texture(Material.texture_diffuse1, vertexTexture));
+    vec3 specularMap = vec3(texture(Material.texture_specular1, vertexTexture));
 
     float color = max(dot(normal, lightDir), 0.0f);
     float intensity = pow(max(dot(viewDir, reflectDir), 0.0), Material.a);

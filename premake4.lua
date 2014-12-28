@@ -16,6 +16,7 @@ newaction {
    end
 }
 
+
 solution "glcookbook"
     configurations {"Debug", "Release"}
         language "C++"
@@ -35,7 +36,8 @@ solution "glcookbook"
         flags {"Symbols"}
 
         links {
-            "freeimageplus"
+            "freeimageplus",
+            "assimp"
         }
 
     configuration {"gmake"}
@@ -73,7 +75,7 @@ solution "glcookbook"
         objdir "out/release/obj"
         targetdir "out/release"
         kind "WindowedApp"
-        flags {"OptimizeSpeed"}
+        flags {"Optimize"}
 
     configuration "Debug"
         defines {"DEBUG"}

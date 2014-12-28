@@ -261,6 +261,8 @@ void glc::BioScene::setup()
     m_light.pos = glm::vec3(1.2f, 1.0f, 2.0f);
 
     m_camera.setPosition(glm::vec3(0.5f, 0.0f, 5.0f));
+
+    // m_nanosuit.load()
 }
 
 void glc::BioScene::update(float diftime)
@@ -376,6 +378,153 @@ void glc::BioScene::draw()
         glBindTexture(GL_TEXTURE_2D, 0);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
+    auto lampShader = m_shaders.at("lamp");
+    glUseProgram(lampShader);
+
+    {
+        auto modelId = glGetUniformLocation(lampShader, "Model");
+        auto viewId = glGetUniformLocation(lampShader, "View");
+        auto projectionId = glGetUniformLocation(lampShader, "Projection");
+        auto mainColorId = glGetUniformLocation(lampShader, "MainColor");
+
+        auto model = glm::mat4(1.0f);
+        model = glm::translate(model, m_light.pos);
+        model = glm::scale(model, glm::vec3(0.2f));
+
+        glUniformMatrix4fv(modelId, 1, GL_FALSE, glm::value_ptr(model));
+        glUniformMatrix4fv(viewId, 1, GL_FALSE, glm::value_ptr(view));
+        glUniformMatrix4fv(projectionId, 1, GL_FALSE, glm::value_ptr(m_projection));
+
+        glUniform3f(mainColorId, m_light.kd.r, m_light.kd.g, m_light.kd.b);
+
+        glBindVertexArray(m_meshes.at("cube").id);
+        glDrawArrays(GL_TRIANGLES, 0, m_meshes.at("cube").size);
+        glBindVertexArray(0);
+    }
+
+    glUseProgram(0);
+}
+
+
+glc::NanoScene::NanoScene(GLFWwindow* window,
+    std::unordered_map<std::string, glc::Mesh> meshes,
+    std::unordered_map<std::string, GLuint> shaders,
+    std::unordered_map<std::string, GLuint> textures)
+: m_window(window),
+  m_camera(window),
+  m_meshes(meshes),
+  m_shaders(shaders),
+  m_textures(textures)
+{
+
+}
+
+void glc::NanoScene::setup()
+{
+    m_light.ka  = glm::vec3(0.1f);
+    m_light.kd  = glm::vec3(0.5f, 0.9f, 0.5f);
+    m_light.ks  = glm::vec3(0.5f, 0.9f, 0.5f);
+    m_light.pos = glm::vec3(1.2f, 1.0f, 2.0f);
+
+    m_camera.setPosition(glm::vec3(0.5f, 0.0f, 5.0f));
+
+    m_nanosuit.load("res/images/nano/nanosuit.obj");
+}
+
+void glc::NanoScene::update(float diftime)
+{
+    auto width = 0, height = 0;
+    glfwGetWindowSize(m_window, &width, &height);
+
+    m_camera.update(diftime);
+    m_light.pos.x = 1.0f + sinf(glfwGetTime()) * 2.0f;
+    m_light.pos.y = sinf(glfwGetTime() / 2.0f) * 1.0f;
+    m_projection = glm::perspective(
+        45.0f,
+        static_cast<float>(width)/static_cast<float>(height),
+        0.1f,
+        1000.0f);
+}
+
+void glc::NanoScene::draw()
+{
+    auto view = m_camera.generateMat();
+
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    auto cubeShader = m_shaders.at("cube");
+    glUseProgram(cubeShader);
+
+    {
+        // auto matKdId = glGetUniformLocation(cubeShader, "Material.kd");
+        // auto matKsId = glGetUniformLocation(cubeShader, "Material.ks");
+        auto matShineId = glGetUniformLocation(cubeShader, "Material.a");
+
+        auto dlightKaId = glGetUniformLocation(cubeShader, "DLight.ka");
+        auto dlightKdId = glGetUniformLocation(cubeShader, "DLight.kd");
+        auto dlightKsId = glGetUniformLocation(cubeShader, "DLight.ks");
+        auto dlightDirId = glGetUniformLocation(cubeShader, "DLight.direction");
+
+        auto plightPosId = glGetUniformLocation(cubeShader, "PLight.position");
+        auto plightKaId = glGetUniformLocation(cubeShader, "PLight.ka");
+        auto plightKdId = glGetUniformLocation(cubeShader, "PLight.kd");
+        auto plightKsId = glGetUniformLocation(cubeShader, "PLight.ks");
+        auto plightKcId = glGetUniformLocation(cubeShader, "PLight.kc");
+        auto plightKlId = glGetUniformLocation(cubeShader, "PLight.kl");
+        auto plightKqId = glGetUniformLocation(cubeShader, "PLight.kq");
+
+        auto slightKaId = glGetUniformLocation(cubeShader, "SLight.ka");
+        auto slightKdId = glGetUniformLocation(cubeShader, "SLight.kd");
+        auto slightKsId = glGetUniformLocation(cubeShader, "SLight.ks");
+        auto slightDirId = glGetUniformLocation(cubeShader, "SLight.spotDir");
+        auto slightPosId = glGetUniformLocation(cubeShader, "SLight.position");
+        auto slightCutOffId = glGetUniformLocation(cubeShader, "SLight.cutOffAngle");
+        auto slightCutInId = glGetUniformLocation(cubeShader, "SLight.cutInAngle");
+
+        auto modelId = glGetUniformLocation(cubeShader, "Model");
+        auto viewId  = glGetUniformLocation(cubeShader, "View");
+        auto projectionId = glGetUniformLocation(cubeShader, "Projection");
+        auto normalMatId  = glGetUniformLocation(cubeShader, "Normal");
+        auto cameraPosId  = glGetUniformLocation(cubeShader, "CameraPosition");
+        auto cameraPos = m_camera.getPosition();
+        auto cameraDir = m_camera.getDirection();
+
+        glUniform3f(dlightDirId, -0.2f, -1.0f, -0.3f);
+        glUniform3f(dlightKaId, 0.1f, 0.1f, 0.1f);
+        glUniform3f(dlightKdId, 1.0f, 1.0f, 1.0f);
+        glUniform3f(dlightKsId, 1.0f, 1.0f, 1.0f);
+
+        glUniform3f(plightPosId, m_light.pos.x, m_light.pos.y, m_light.pos.z);
+        glUniform3f(plightKaId, m_light.ka.r, m_light.ka.g, m_light.ka.b);
+        glUniform3f(plightKdId, m_light.kd.r, m_light.kd.g, m_light.kd.b);
+        glUniform3f(plightKsId, m_light.ks.r, m_light.ks.g, m_light.ks.b);
+        glUniform1f(plightKcId, 1.0f);
+        glUniform1f(plightKlId, 0.09f);
+        glUniform1f(plightKqId, 0.032f);
+
+        glUniform3f(slightPosId, cameraPos.x, cameraPos.y, cameraPos.z);
+        glUniform3f(slightDirId, cameraDir.x, cameraDir.y, cameraDir.z);
+        glUniform3f(slightKaId, m_light.ka.r, m_light.ka.g, m_light.ka.b);
+        glUniform3f(slightKdId, 0.0f, 0.0f, 0.0f);
+        glUniform3f(slightKsId, 1.0f, 1.0f, 1.0f);
+        glUniform1f(slightCutInId, glm::cos(glm::radians(12.5f)));
+        glUniform1f(slightCutOffId, glm::cos(glm::radians(17.5f)));
+
+        glUniformMatrix4fv(viewId, 1, GL_FALSE, glm::value_ptr(view));
+        glUniformMatrix4fv(projectionId, 1, GL_FALSE, glm::value_ptr(m_projection));
+        glUniform3f(cameraPosId, cameraPos.x, cameraPos.y, cameraPos.z);
+
+        glUniform1f(matShineId, 64.0f);
+
+        auto model = glm::mat4(1.0f);
+        auto normalMat = glm::mat3(glm::transpose(glm::inverse(model)));
+        glUniformMatrix3fv(normalMatId, 1, GL_FALSE, glm::value_ptr(normalMat));
+        glUniformMatrix4fv(modelId, 1, GL_FALSE, glm::value_ptr(model));
+
+        m_nanosuit.draw(cubeShader);
     }
 
     auto lampShader = m_shaders.at("lamp");
