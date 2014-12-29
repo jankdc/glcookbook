@@ -87,96 +87,96 @@ solution "glcookbook"
         location "build/window_creation"
         files {
             "src/window_creation/**.cpp",
-            "src/window_creation/**.h"
+            "src/window_creation/**.hpp"
         }
 
     project "triangle"
         location "build/triangle"
         files {
             "src/triangle/**.cpp",
-            "src/triangle/**.h"
+            "src/triangle/**.hpp"
         }
 
     project "rectangle"
         location "build/rectangle"
         files {
             "src/rectangle/**.cpp",
-            "src/rectangle/**.h"
+            "src/rectangle/**.hpp"
         }
 
     project "basic_shader"
         location "build/basic_shader"
         files {
             "src/basic_shader/**.cpp",
-            "src/basic_shader/**.h"
+            "src/basic_shader/**.hpp"
         }
 
     project "textures"
         location "build/textures"
         files {
             "src/textures/**.cpp",
-            "src/textures/**.h"
+            "src/textures/**.hpp"
         }
 
     project "transform"
         location "build/transform"
         files {
             "src/transform/**.cpp",
-            "src/transform/**.h"
+            "src/transform/**.hpp"
         }
 
     project "coordinates"
         location "build/coordinates"
         files {
             "src/coordinates/**.cpp",
-            "src/coordinates/**.h"
+            "src/coordinates/**.hpp"
         }
 
     project "camera"
         location "build/camera"
         files {
             "src/camera/**.cpp",
-            "src/camera/**.h"
+            "src/camera/**.hpp"
         }
 
     project "color"
         location "build/color"
         files {
             "src/color/**.cpp",
-            "src/color/**.h"
+            "src/color/**.hpp"
         }
 
     project "basic_lighting"
         location "build/basic_lighting"
         files {
             "src/basic_lighting/**.cpp",
-            "src/basic_lighting/**.h"
+            "src/basic_lighting/**.hpp"
         }
 
     project "material"
         location "build/material"
         files {
             "src/material/**.cpp",
-            "src/material/**.h"
+            "src/material/**.hpp"
         }
 
     project "lightmaps"
         location "build/lightmaps"
         files {
             "src/lightmaps/**.cpp",
-            "src/lightmaps/**.h"
+            "src/lightmaps/**.hpp"
         }
 
     project "lightcasters"
         location "build/lightcasters"
         files {
             "src/lightcasters/**.cpp",
-            "src/lightcasters/**.h"
+            "src/lightcasters/**.hpp"
         }
 
     project "models"
         location "build/models"
         files {
             "src/models/**.cpp",
-            "src/models/**.h"
+            "src/models/**.hpp"
         }
