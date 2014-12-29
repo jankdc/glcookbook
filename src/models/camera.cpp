@@ -1,4 +1,4 @@
-#include "camera.h"
+#include "camera.hpp"
 #include <GLFW/glfw3.h>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -13,6 +13,8 @@ glc::Camera::Camera(GLFWwindow* window)
     m_worldUp = glm::vec3(0.0f, 1.0f, 0.0f);
     m_right = glm::normalize(glm::cross(m_worldUp, m_direction));
     m_moved = GL_FALSE;
+    m_lastX = 0.0;
+    m_lastY = 0.0;
 }
 
 void glc::Camera::update(float delta)

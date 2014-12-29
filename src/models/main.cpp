@@ -1,11 +1,14 @@
-#include "camera.h"
-#include "common.h"
-#include "scene.h"
+#include "camera.hpp"
+#include "common.hpp"
+#include "shader.hpp"
+#include "scene.hpp"
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <vector>
 #include <unordered_map>
 #include <iostream>
+#include <regex>
 
 
 const auto WINDOW_WIDTH  = 800;
@@ -110,6 +113,19 @@ int main(int argc, char const *argv[])
     auto cubeMeshId = glc::makeMesh(VERTICES);
     auto cubeMeshTex = glc::makeTexture("res/images/box.png");
     auto cubeMeshSpec = glc::makeTexture("res/images/box_specular.png");
+
+
+    // auto phongShader = glc::Shader
+    // {{
+    //     "res/shaders/phong-vt.glsl",
+    //     "res/shaders/phong-ft.glsl"
+    // }};
+
+    // auto basicShader = glc::Shader
+    // {{
+    //     "res/shaders/basic-vt.glsl",
+    //     "res/shaders/basic-ft.glsl"
+    // }};
 
 
     // CUBE SHADER

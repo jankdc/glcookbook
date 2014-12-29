@@ -1,5 +1,6 @@
-#include "camera.h"
-#include "scene.h"
+#include "camera.hpp"
+#include "scene.hpp"
+
 #include <GLFW/glfw3.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>

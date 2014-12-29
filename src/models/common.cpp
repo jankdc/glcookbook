@@ -1,4 +1,5 @@
-#include "common.h"
+#include "common.hpp"
+#include "error.hpp"
 #include <FreeImagePlus.h>
 #include <iostream>
 #include <fstream>
@@ -127,7 +128,7 @@ std::string glc::makeString(std::string path)
     }
     catch (const std::ios_base::failure& err)
     {
-        throw std::ios_base::failure(path + " is not available.");
+        throw glc::MalformedFilePath(path);
     }
 
     file.seekg(0, std::ios::end);

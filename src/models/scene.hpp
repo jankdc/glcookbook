@@ -4,7 +4,7 @@
 #define GLC_SCENE_H
 
 
-#include "common.h"
+#include "common.hpp"
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <assimp/Importer.hpp>
