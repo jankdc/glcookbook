@@ -1,20 +1,24 @@
 #include "camera.hpp"
+
 #include <GLFW/glfw3.h>
 #include <glm/gtc/matrix_transform.hpp>
 
 glc::Camera::Camera(GLFWwindow* window)
+: mWindow(window),
+  mPitch(0.0f),
+  mYaw(-90.0f),
+  mSensitivity(5.0f),
+  mSpeed(3.0f),
+  mPosition(0.0f),
+  mDirection(0.0f, 0.0f, -1.0f),
+  mUp(0.0f, 1.0f, 0.0f),
+  mWorldUp(0.0f, 1.0f, 0.0f),
+  mRight(glm::normalize(glm::cross(mWorldUp, mDirection))),
+  mLastX(0.0),
+  mLastY(0.0),
+  mMoved(false)
 {
-    m_window = window;
-    m_pitch = 0.0f;
-    m_yaw = -90.0f;
-    m_sensitivity = 5.0f;
-    m_speed = 3.0f;
-    m_direction = glm::vec3(0.0f, 0.0f, -1.0f);
-    m_worldUp = glm::vec3(0.0f, 1.0f, 0.0f);
-    m_right = glm::normalize(glm::cross(m_worldUp, m_direction));
-    m_moved = GL_FALSE;
-    m_lastX = 0.0;
-    m_lastY = 0.0;
+
 }
 
 void glc::Camera::update(float delta)
@@ -25,16 +29,16 @@ void glc::Camera::update(float delta)
 
 void glc::Camera::updateMovement(float delta)
 {
-    auto deltaSpeed = m_speed * delta;
+    auto deltaSpeed = mSpeed * delta;
 
-    if(glfwGetKey(m_window, GLFW_KEY_W))
-        m_position += glm::normalize(m_direction) * deltaSpeed;
-    if(glfwGetKey(m_window, GLFW_KEY_S))
-        m_position -= glm::normalize(m_direction) * deltaSpeed;
-    if(glfwGetKey(m_window, GLFW_KEY_A))
-        m_position -= glm::normalize(m_right) * deltaSpeed;
-    if(glfwGetKey(m_window, GLFW_KEY_D))
-        m_position += glm::normalize(m_right) * deltaSpeed;
+    if(glfwGetKey(mWindow, GLFW_KEY_W))
+        mPosition += glm::normalize(mDirection) * deltaSpeed;
+    if(glfwGetKey(mWindow, GLFW_KEY_S))
+        mPosition -= glm::normalize(mDirection) * deltaSpeed;
+    if(glfwGetKey(mWindow, GLFW_KEY_A))
+        mPosition -= glm::normalize(mRight) * deltaSpeed;
+    if(glfwGetKey(mWindow, GLFW_KEY_D))
+        mPosition += glm::normalize(mRight) * deltaSpeed;
 }
 
 void glc::Camera::updateLook(float delta)
@@ -42,74 +46,74 @@ void glc::Camera::updateLook(float delta)
     auto currentCursorX = 0.0;
     auto currentCursorY = 0.0;
 
-    glfwGetCursorPos(m_window, &currentCursorX, &currentCursorY);
+    glfwGetCursorPos(mWindow, &currentCursorX, &currentCursorY);
 
     // glfwGetCursorPos return incorrect value when cursor hasn't moved
     // for the first time. Prevents camera jolting when you move the cursor
     // the first time.
-    if (not m_moved and currentCursorX != 0.0 and currentCursorY != 0.0)
+    if (not mMoved and currentCursorX != 0.0 and currentCursorY != 0.0)
     {
-        m_lastX = currentCursorX;
-        m_lastY = currentCursorY;
+        mLastX = currentCursorX;
+        mLastY = currentCursorY;
 
-        m_moved = true;
+        mMoved = true;
     }
 
-    auto xoffset = currentCursorX - m_lastX;
-    auto yoffset = m_lastY - currentCursorY;
+    auto xoffset = currentCursorX - mLastX;
+    auto yoffset = mLastY - currentCursorY;
 
-    m_lastX = currentCursorX;
-    m_lastY = currentCursorY;
+    mLastX = currentCursorX;
+    mLastY = currentCursorY;
 
-    m_yaw += m_sensitivity * delta * xoffset;
-    m_pitch += m_sensitivity * delta * yoffset;
+    mYaw += mSensitivity * delta * xoffset;
+    mPitch += mSensitivity * delta * yoffset;
 
-    if (m_pitch > 89.0f)
-        m_pitch = 89.0f;
-    if (m_pitch < -89.0f)
-        m_pitch = -89.0f;
+    if (mPitch > 89.0f)
+        mPitch = 89.0f;
+    if (mPitch < -89.0f)
+        mPitch = -89.0f;
 
     auto newDir = glm::vec3(0.0f);
-    newDir.x = cosf(glm::radians(m_yaw)) * cosf(glm::radians(m_pitch));
-    newDir.y = sinf(glm::radians(m_pitch));
-    newDir.z = sinf(glm::radians(m_yaw)) * cosf(glm::radians(m_pitch));
+    newDir.x = cosf(glm::radians(mYaw)) * cosf(glm::radians(mPitch));
+    newDir.y = sinf(glm::radians(mPitch));
+    newDir.z = sinf(glm::radians(mYaw)) * cosf(glm::radians(mPitch));
 
-    m_direction = glm::normalize(newDir);
-    m_right = glm::normalize(glm::cross(m_direction, m_worldUp));
-    m_up = glm::normalize(glm::cross(m_direction, m_right));
+    mDirection = glm::normalize(newDir);
+    mRight = glm::normalize(glm::cross(mDirection, mWorldUp));
+    mUp = glm::normalize(glm::cross(mDirection, mRight));
 }
 
 void glc::Camera::setPosition(glm::vec3 position)
 {
-    m_position = position;
+    mPosition = position;
 }
 
 void glc::Camera::setDirection(glm::vec3 direction)
 {
-    m_direction = direction;
+    mDirection = direction;
 }
 
 void glc::Camera::setSensitivity(float sensitivity)
 {
-    m_sensitivity = sensitivity;
+    mSensitivity = sensitivity;
 }
 
 void glc::Camera::setMovementSpeed(float speed)
 {
-    m_speed = speed;
+    mSpeed = speed;
 }
 
 glm::vec3 glc::Camera::getPosition() const
 {
-    return m_position;
+    return mPosition;
 }
 
 glm::vec3 glc::Camera::getDirection() const
 {
-    return m_direction;
+    return mDirection;
 }
 
 glm::mat4 glc::Camera::generateMat() const
 {
-    return glm::lookAt(m_position, m_position + m_direction, m_worldUp);
+    return glm::lookAt(mPosition, mPosition + mDirection, mWorldUp);
 }

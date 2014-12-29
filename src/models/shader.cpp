@@ -4,8 +4,6 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
-#include <regex>
-
 namespace {
     const auto shaderType = std::unordered_map<std::string, GLenum>
     {
@@ -13,12 +11,8 @@ namespace {
         {"fm", GL_FRAGMENT_SHADER }
     };
 
-    const auto shaderRegex = std::regex
-    {
-        "(.+)-(vt|fm|gt|ts)(\\.glsl)"
-    };
-
     GLuint makeShader(std::string path);
+    GLenum makeShaderType(std::string path);
     GLvoid makeProgram(GLuint handle);
 }
 
@@ -65,6 +59,12 @@ void glc::Shader::setUniform(std::string name, glm::mat4 value)
     glUniformMatrix4fv(handle, 1, GL_FALSE, glm::value_ptr(value));
 }
 
+void glc::Shader::setUniform(std::string name, glm::mat3 value)
+{
+    const auto handle = this->getUniform(name);
+    glUniformMatrix3fv(handle, 1, GL_FALSE, glm::value_ptr(value));
+}
+
 void glc::Shader::setUniform(std::string name, GLfloat value)
 {
     const auto handle = this->getUniform(name);
@@ -93,16 +93,9 @@ GLuint glc::Shader::getUniform(std::string name)
 namespace {
     GLuint makeShader(std::string path)
     {
-        // Check if the shader file name is not malformed.
-        auto matches = std::smatch {};
-        if (! std::regex_match(path, matches, shaderRegex))
-        {
-            throw glc::MalformedShaderName(path);
-        }
-
         // Compile the shader.
         auto srcText = glc::makeString(path);
-        auto srcHandle = glCreateShader(shaderType.at(matches[2]));
+        auto srcHandle = glCreateShader(::makeShaderType(path));
         auto srcRawText = srcText.c_str();
         glShaderSource(srcHandle, 1, &srcRawText, nullptr);
         glCompileShader(srcHandle);
@@ -110,7 +103,8 @@ namespace {
         // Check if shader content is not malformed.
         GLint success;
         glGetShaderiv(srcHandle, GL_COMPILE_STATUS, &success);
-        if (! success) {
+        if (! success)
+        {
             GLchar errMsg[512];
             glGetShaderInfoLog(srcHandle, sizeof(errMsg), nullptr, errMsg);
             throw glc::MalformedShaderText(path, errMsg);
@@ -126,10 +120,27 @@ namespace {
         // Check if shader program has linked successfully.
         GLint success;
         glGetProgramiv(handle, GL_LINK_STATUS, &success);
-        if (! success) {
+        if (! success)
+        {
             GLchar errMsg[512];
             glGetProgramInfoLog(handle, sizeof(errMsg), nullptr, errMsg);
             throw glc::MalformedShader(errMsg);
         }
+    }
+
+    GLenum makeShaderType(std::string path)
+    {
+        for (const auto& t : shaderType)
+        {
+            auto extension = path.substr(path.find_last_of("-"), path.size());
+            auto toBeMatched = "-" + t.first + ".glsl";
+
+            if (extension == toBeMatched)
+            {
+                return t.second;
+            }
+        }
+
+        throw glc::MalformedShaderName(path);
     }
 }

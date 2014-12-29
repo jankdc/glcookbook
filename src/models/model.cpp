@@ -1,8 +1,90 @@
 #include "model.hpp"
 #include "error.hpp"
-#include "common.hpp"
+#include "shader.hpp"
 
+#include <FreeImagePlus.h>
 #include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
+
+namespace {
+    GLuint makeTexture(std::string path);
+}
+
+glc::Mesh::Mesh(
+    const std::vector<glc::Vex>& vertices,
+    const std::vector<glc::Tex>& textures,
+    const std::vector<GLuint>& indices)
+: mVertices(vertices),
+  mTextures(textures),
+  mIndices(indices)
+{
+    glGenVertexArrays(1, &mVao);
+    glGenBuffers(1, &mVbo);
+    glGenBuffers(1, &mEbo);
+
+    glBindVertexArray(mVao);
+
+    auto vbytesize = mVertices.size() * sizeof(glc::Vex);
+    glBindBuffer(GL_ARRAY_BUFFER, mVbo);
+    glBufferData(GL_ARRAY_BUFFER, vbytesize, mVertices.data(), GL_STATIC_DRAW);
+
+    auto ibytesize = mIndices.size() * sizeof(GLuint);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mEbo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, ibytesize, mIndices.data(), GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glc::Vex),
+        (GLvoid*)0);
+
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glc::Vex),
+        (GLvoid*)offsetof(glc::Vex, norm));
+
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(glc::Vex),
+        (GLvoid*)offsetof(glc::Vex, uv));
+
+    glBindVertexArray(0);
+}
+
+void glc::Mesh::draw(glc::Shader* shader)
+{
+    shader->use();
+
+    GLuint diff = 1;
+    GLuint spec = 1;
+    for (size_t i = 0; i < mTextures.size(); i++)
+    {
+        std::string symbol = "Material.";
+
+        switch (mTextures[i].type)
+        {
+        case glc::TexType::DIFF:
+            symbol += "texture_diffuse" + std::to_string(diff);
+            diff += 1;
+            break;
+        case glc::TexType::SPEC:
+            symbol += "texture_specular" + std::to_string(spec);
+            spec += 1;
+            break;
+        }
+
+        glActiveTexture(GL_TEXTURE0 + i);
+        glBindTexture(GL_TEXTURE_2D, mTextures[i].id);
+        shader->setUniform(symbol, static_cast<GLint>(i));
+    }
+
+    glBindVertexArray(mVao);
+    glDrawElements(GL_TRIANGLES, mIndices.size(), GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
+
+    for (size_t i = 0; i < mTextures.size(); i++)
+    {
+        glActiveTexture(GL_TEXTURE0 + i);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+}
+
 
 glc::Model::Model(std::string path)
 : mMeshes(),
@@ -20,12 +102,12 @@ glc::Model::Model(std::string path)
     this->processNode(scene, scene->mRootNode);
 }
 
-void glc::Model::draw(glc::Shader shader)
+void glc::Model::draw(glc::Shader* shader)
 {
-    // for (auto &m : mMeshes)
-    // {
-
-    // }
+    for (auto &m : mMeshes)
+    {
+        m.draw(shader);
+    }
 }
 
 void glc::Model::processNode(const aiScene* scene, const aiNode* node)
@@ -44,13 +126,13 @@ void glc::Model::processNode(const aiScene* scene, const aiNode* node)
 
 void glc::Model::processMesh(const aiScene* scene, const aiMesh* mesh)
 {
-    std::vector<glc::vtx> vertices;
-    std::vector<glc::tex> textures;
+    std::vector<glc::Vex> vertices;
+    std::vector<glc::Tex> textures;
     std::vector<GLuint> indices;
 
     for (size_t i = 0; i < mesh->mNumVertices; i++)
     {
-        glc::vtx v;
+        glc::Vex v;
 
         v.pos = glm::vec3(
             mesh->mVertices[i].x,
@@ -94,9 +176,9 @@ void glc::Model::processMesh(const aiScene* scene, const aiMesh* mesh)
     mMeshes.emplace_back(vertices, textures, indices);
 }
 
-std::vector<glc::tex> glc::Model::getTex(const aiMaterial* mat, const aiTextureType type)
+std::vector<glc::Tex> glc::Model::getTex(const aiMaterial* mat, const aiTextureType type)
 {
-    std::vector<glc::tex> textures;
+    std::vector<glc::Tex> textures;
 
     for (size_t i = 0; i < mat->GetTextureCount(type); i++)
     {
@@ -109,15 +191,15 @@ std::vector<glc::tex> glc::Model::getTex(const aiMaterial* mat, const aiTextureT
         }
         else
         {
-            glc::tex tex;
-            tex.id = glc::makeTexture(mBaseDirectory + "/" + str.C_Str());
+            auto tex = glc::Tex();
+            tex.id = ::makeTexture(mBaseDirectory + "/" + str.C_Str());
             switch (type)
             {
             case aiTextureType_SPECULAR:
-                tex.type = glc::textype::SPECULAR;
+                tex.type = glc::TexType::SPEC;
                 break;
             case aiTextureType_DIFFUSE:
-                tex.type = glc::textype::DIFFUSE;
+                tex.type = glc::TexType::DIFF;
                 break;
             default:
                 // Sooooon...
@@ -129,4 +211,32 @@ std::vector<glc::tex> glc::Model::getTex(const aiMaterial* mat, const aiTextureT
     }
 
     return textures;
+}
+
+namespace {
+    GLuint makeTexture(std::string path)
+    {
+        GLuint id;
+        glGenTextures(1, &id);
+
+        fipImage image;
+        image.load(path.c_str());
+        image.convertTo32Bits();
+        auto data = image.accessPixels();
+        auto w = image.getWidth();
+        auto h = image.getHeight();
+
+        auto minSetting = GL_LINEAR_MIPMAP_LINEAR;
+        auto magSetting = GL_LINEAR;
+
+        glBindTexture(GL_TEXTURE_2D,id);
+        glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,w,h,0,GL_BGRA,GL_UNSIGNED_BYTE,data);
+        glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,minSetting);
+        glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,magSetting);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D,0);
+        image.clear();
+
+        return id;
+    }
 }

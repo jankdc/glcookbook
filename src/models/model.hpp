@@ -3,57 +3,66 @@
 #ifndef GLC_MODEL_HPP
 #define GLC_MODEL_HPP
 
-#include "shader.hpp"
-
+#include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <assimp/scene.h>
-#include <assimp/postprocess.h>
 
 #include <vector>
 #include <string>
 #include <unordered_map>
 
 namespace glc {
-    struct vtx
+    class Shader;
+
+    struct Vex
     {
         glm::vec3 pos;
         glm::vec3 norm;
         glm::vec2 uv;
     };
 
-    enum class textype
+    enum class TexType
     {
-        SPECULAR,
-        DIFFUSE
+        SPEC,
+        DIFF
     };
 
-    struct tex
+    struct Tex
     {
         GLuint id;
-        textype type;
+        TexType type;
     };
 
-    struct mesh
+    class Mesh
     {
-        std::vector<glc::vtx> vertices;
-        std::vector<glc::tex> textures;
-        std::vector<GLuint> indices;
+    public:
+        explicit
+        Mesh(const std::vector<glc::Vex>& vertices,
+             const std::vector<glc::Tex>& textures,
+             const std::vector<GLuint>& indices);
+
+        void draw(glc::Shader* shader);
+    private:
+        std::vector<glc::Vex> mVertices;
+        std::vector<glc::Tex> mTextures;
+        std::vector<GLuint> mIndices;
+        GLuint mVao, mVbo, mEbo;
     };
 
     class Model
     {
     public:
         explicit Model(std::string path);
-        void draw(glc::Shader shader);
+        void draw(glc::Shader* shader);
     private:
-        std::vector<glc::mesh> mMeshes;
-        std::unordered_map<std::string, glc::tex> mLoadedTextures;
+        std::vector<glc::Mesh> mMeshes;
+        std::unordered_map<std::string, glc::Tex> mLoadedTextures;
         std::string mBaseDirectory;
 
         // Helper Methods
         void processNode(const aiScene* scene, const aiNode* node);
         void processMesh(const aiScene* scene, const aiMesh* mesh);
-        std::vector<glc::tex> getTex(const aiMaterial* mat, const aiTextureType type);
+        std::vector<glc::Tex> getTex(const aiMaterial* mat, const aiTextureType type);
     };
 }
 

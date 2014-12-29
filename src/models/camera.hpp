@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef GLC_CAMERA_H
-#define GLC_CAMERA_H
+#ifndef GLC_CAMERA_HPP
+#define GLC_CAMERA_HPP
 
 #include <glm/glm.hpp>
 
@@ -24,19 +24,19 @@ namespace glc {
         glm::vec3 getDirection() const;
         glm::mat4 generateMat() const;
     private:
-        GLFWwindow* m_window;
-        float m_pitch;
-        float m_yaw;
-        float m_sensitivity;
-        float m_speed;
-        glm::vec3 m_position;
-        glm::vec3 m_direction;
-        glm::vec3 m_up;
-        glm::vec3 m_right;
-        glm::vec3 m_worldUp;
-        double m_lastX;
-        double m_lastY;
-        bool m_moved;
+        GLFWwindow* mWindow;
+        float mPitch;
+        float mYaw;
+        float mSensitivity;
+        float mSpeed;
+        glm::vec3 mPosition;
+        glm::vec3 mDirection;
+        glm::vec3 mUp;
+        glm::vec3 mWorldUp;
+        glm::vec3 mRight;
+        double mLastX;
+        double mLastY;
+        bool mMoved;
     };
 
 }

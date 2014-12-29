@@ -10,8 +10,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace glc
-{
+namespace glc {
     class Shader
     {
     public:
@@ -21,6 +20,7 @@ namespace glc
         void use();
         void setUniform(std::string name, glm::vec3 value);
         void setUniform(std::string name, glm::mat4 value);
+        void setUniform(std::string name, glm::mat3 value);
         void setUniform(std::string name, GLfloat value);
         void setUniform(std::string name, GLint value);
     private:

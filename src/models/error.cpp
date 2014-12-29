@@ -9,7 +9,7 @@ glc::MalformedShaderName::MalformedShaderName(const std::string& path)
 }
 
 glc::MalformedShaderText::MalformedShaderText(const std::string& path, const std::string& msg)
-: std::runtime_error(path + std::string {": "} + msg)
+: std::runtime_error(path + std::string {"\n"} + msg)
 {
 
 }
