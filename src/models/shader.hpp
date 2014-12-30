@@ -26,6 +26,7 @@ namespace glc {
     private:
         const GLuint mHandle;
         std::unordered_map<std::string, GLuint> mUniformCache;
+        std::vector<std::string> mPaths;
 
         // Helper Methods
         GLuint getUniform(std::string name);

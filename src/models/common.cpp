@@ -24,3 +24,15 @@ std::string glc::makeString(std::string path)
     file.close();
     return buffer;
 }
+
+std::string glc::makeString(std::vector<std::string> strs, std::string delim)
+{
+    std::string str = "";
+    for (size_t i = 0; i < strs.size(); i++)
+    {
+        str += strs[i];
+        str += (i != strs.size() - 1) ? delim : "";
+    }
+
+    return str;
+}

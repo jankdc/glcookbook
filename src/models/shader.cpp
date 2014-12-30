@@ -18,7 +18,8 @@ namespace {
 
 glc::Shader::Shader(std::vector<std::string> paths)
 : mHandle(glCreateProgram()),
-  mUniformCache()
+  mUniformCache(),
+  mPaths(paths)
 {
     auto srcHandles = std::vector<GLuint>();
 
@@ -84,6 +85,11 @@ GLuint glc::Shader::getUniform(std::string name)
     }
 
     auto uniformHandle = glGetUniformLocation(mHandle, name.c_str());
+
+    if (uniformHandle == -1) {
+        throw glc::MalformedUniform(mPaths, name);
+    }
+
     mUniformCache.emplace(name, uniformHandle);
 
     return uniformHandle;

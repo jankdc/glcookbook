@@ -1,6 +1,5 @@
 #include "error.hpp"
-
-#include <string>
+#include "common.hpp"
 
 glc::MalformedShaderName::MalformedShaderName(const std::string& path)
 : std::runtime_error(path)
@@ -28,6 +27,14 @@ glc::MalformedFilePath::MalformedFilePath(const std::string& path)
 
 glc::MalformedModel::MalformedModel(const std::string& path, const std::string& msg)
 : std::runtime_error(path + std::string {": "} + msg)
+{
+
+}
+
+glc::MalformedUniform::MalformedUniform(
+    const std::vector<std::string>& paths,
+    const std::string& name)
+: std::runtime_error("Uniform doesn't exist: "+name+"\n  In: "+glc::makeString(paths, ", "))
 {
 
 }

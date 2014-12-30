@@ -4,6 +4,8 @@
 #define GLC_ERROR_HPP
 
 #include <stdexcept>
+#include <string>
+#include <vector>
 
 namespace glc {
     class MalformedShaderName : public std::runtime_error
@@ -34,6 +36,14 @@ namespace glc {
     {
     public:
         explicit MalformedModel(const std::string& path, const std::string& msg);
+    };
+
+    class MalformedUniform : public std::runtime_error
+    {
+    public:
+        explicit MalformedUniform(
+            const std::vector<std::string>& paths,
+            const std::string& name);
     };
 }
 
