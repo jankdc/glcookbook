@@ -61,9 +61,14 @@ int main(int argc, char ** argv) {
 
   // This array form 3 sets of X, Y, Z vertex coordinates, forming a triangle.
   GLfloat vertices[] = {
-    -0.5f, -0.5f, 0.0f,
-     0.5f, -0.5f, 0.0f,
-     0.0f,  0.5f, 0.0f
+    // First triangle
+     0.5f,  0.5f, 0.0f,  // Top Right
+     0.5f, -0.5f, 0.0f,  // Bottom Right
+    -0.5f,  0.5f, 0.0f,  // Top Left
+    // Second triangle
+     0.5f, -0.5f, 0.0f,  // Bottom Right
+    -0.5f, -0.5f, 0.0f,  // Bottom Left
+    -0.5f,  0.5f, 0.0f   // Top Left
   };
 
   // Sets up our vertex array object (VAO) in order to store the state
@@ -95,7 +100,7 @@ int main(int argc, char ** argv) {
 
     glUseProgram(program);
     glBindVertexArray(vao);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
 
     glfwSwapBuffers(window);
