@@ -57,18 +57,19 @@ int main(int argc, char ** argv) {
 
 
   // OpenGL settings
-  glViewport(0, 0, WIDTH, HEIGHT);
+  glViewport(0, 0, WIDTH, HEIGHT); // Sync OpenGL coordinates to GLFW window.
+  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // GL_LINE for wireframe mode.
 
-  // This array form 3 sets of X, Y, Z vertex coordinates, forming a triangle.
   GLfloat vertices[] = {
-    // First triangle
-     0.5f,  0.5f, 0.0f,  // Top Right
-     0.5f, -0.5f, 0.0f,  // Bottom Right
-    -0.5f,  0.5f, 0.0f,  // Top Left
-    // Second triangle
-     0.5f, -0.5f, 0.0f,  // Bottom Right
-    -0.5f, -0.5f, 0.0f,  // Bottom Left
-    -0.5f,  0.5f, 0.0f   // Top Left
+   0.5f,  0.5f, 0.0f,  // Top Right
+   0.5f, -0.5f, 0.0f,  // Bottom Right
+  -0.5f, -0.5f, 0.0f,  // Bottom Left
+  -0.5f,  0.5f, 0.0f   // Top Left
+  };
+
+  GLuint indices[] = {  // Note that we start from 0!
+   0, 1, 3, // First Triangle
+   1, 2, 3  // Second Triangle
   };
 
   // Sets up our vertex array object (VAO) in order to store the state
@@ -85,6 +86,11 @@ int main(int argc, char ** argv) {
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), nullptr);
   glEnableVertexAttribArray(0);
 
+  GLuint ebo;
+  glGenBuffers(1, &ebo);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
   glBindVertexArray(0);
 
   const auto vs = makeShader("data/shaders/simple_vs.glsl", GL_VERTEX_SHADER);
@@ -100,7 +106,7 @@ int main(int argc, char ** argv) {
 
     glUseProgram(program);
     glBindVertexArray(vao);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glDrawElements(GL_TRIANGLES, sizeof(indices), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 
     glfwSwapBuffers(window);
