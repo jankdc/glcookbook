@@ -6,8 +6,6 @@
 #include <string>
 #include <vector>
 
-constexpr int WIDTH  = 800;
-constexpr int HEIGHT = 600;
 constexpr const char * TITLE = "An OpenGL Cookbook.";
 
 std::string getFileContents(std::string path);
@@ -29,7 +27,7 @@ int main(int argc, char ** argv) {
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
   glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-  auto window = glfwCreateWindow(WIDTH, HEIGHT, TITLE, nullptr, nullptr);
+  auto window = glfwCreateWindow(800, 600, TITLE, nullptr, nullptr);
   if (! window) {
     std::cerr << "GLFW Error: Failed to create GLFW window\n";
     glfwTerminate();
@@ -48,6 +46,11 @@ int main(int argc, char ** argv) {
       }
   });
 
+  // This is used to sync GL viewport's NDC coordinates with GLFW's window
+  // resolution.
+  int width, height;
+  glfwGetFramebufferSize(window, &width, &height);
+
   glewExperimental = GL_TRUE;
   if (glewInit() != GLEW_OK) {
     std::cerr << "GLEW Error: Failed to initialize GLEW\n";
@@ -57,9 +60,8 @@ int main(int argc, char ** argv) {
 
   /* NOTE: We can now call OpenGL functions from here. */
 
-
   // OpenGL settings
-  glViewport(0, 0, WIDTH, HEIGHT); // Sync OpenGL coordinates to GLFW window.
+  glViewport(0, 0, width, height); // Sync OpenGL coordinates to GLFW window.
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // GL_LINE for wireframe mode.
 
   GLfloat vertices[] = {
@@ -172,7 +174,7 @@ void printShaderError(GLuint shader) {
 
   if (! success) {
     glGetShaderInfoLog(shader, 512, nullptr, infoLog);
-    std::cerr << "Shader Error: " << infoLog << "\n";
+    std::cerr << "Shader Error:\n" << infoLog << "\n";
   }
 }
 
@@ -183,6 +185,6 @@ void printProgramError(GLuint program) {
 
   if (! success) {
     glGetProgramInfoLog(program, 512, nullptr, infoLog);
-    std::cerr << "Program Error: " << infoLog << "\n";
+    std::cerr << "Program Error:\n" << infoLog << "\n";
   }
 }
