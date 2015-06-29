@@ -13,6 +13,8 @@ constexpr const char * TITLE = "An OpenGL Cookbook.";
 std::string getFileContents(std::string path);
 GLuint makeShader(std::string path, GLenum type);
 GLuint makeProgram(std::vector<GLuint> shaders);
+void printShaderError(GLuint shader);
+void printProgramError(GLuint program);
 
 int main(int argc, char ** argv) {
 
@@ -97,6 +99,10 @@ int main(int argc, char ** argv) {
   const auto fs = makeShader("data/shaders/simple_fs.glsl", GL_FRAGMENT_SHADER);
   const auto program = makeProgram({vs, fs});
 
+  printShaderError(vs);
+  printShaderError(fs);
+  printProgramError(program);
+
   while (! glfwWindowShouldClose(window)) {
     glfwPollEvents();
 
@@ -157,4 +163,26 @@ GLuint makeProgram(std::vector<GLuint> shaders) {
   }
 
   return program;
+}
+
+void printShaderError(GLuint shader) {
+  GLint success;
+  GLchar infoLog[512];
+  glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+
+  if (! success) {
+    glGetShaderInfoLog(shader, 512, nullptr, infoLog);
+    std::cerr << "Shader Error: " << infoLog << "\n";
+  }
+}
+
+void printProgramError(GLuint program) {
+  GLint success;
+  GLchar infoLog[512];
+  glGetProgramiv(program, GL_LINK_STATUS, &success);
+
+  if (! success) {
+    glGetProgramInfoLog(program, 512, nullptr, infoLog);
+    std::cerr << "Program Error: " << infoLog << "\n";
+  }
 }
