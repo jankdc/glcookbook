@@ -44,7 +44,7 @@ int main(int argc, char ** argv) {
       if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, GL_TRUE);
       }
-    });
+  });
 
   glewExperimental = GL_TRUE;
   if (glewInit() != GLEW_OK) {
