@@ -1,11 +1,11 @@
 #version 330 core
 
-// The input variable from the vertex shader (same name and same type).
-in vec4 vertexColor;
-
 // This is the final color output for each fragment.
 out vec4 color;
 
+// We set this variable in the OpenGL code.
+uniform vec4 ourColor;
+
 void main() {
-  color = vertexColor;
+  color = ourColor;
 }

@@ -1,6 +1,8 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include <cmath>
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -65,15 +67,13 @@ int main(int argc, char ** argv) {
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // GL_LINE for wireframe mode.
 
   GLfloat vertices[] = {
-   0.5f,  0.5f, 0.0f,  // Top Right
+   0.0f,  0.5f, 0.0f,  // Top
    0.5f, -0.5f, 0.0f,  // Bottom Right
   -0.5f, -0.5f, 0.0f,  // Bottom Left
-  -0.5f,  0.5f, 0.0f   // Top Left
   };
 
   GLuint indices[] = {  // Note that we start from 0!
-   0, 1, 3, // First Triangle
-   1, 2, 3  // Second Triangle
+   0, 1, 2 // First Triangle
   };
 
   // Sets up our vertex array object (VAO) in order to store the state
@@ -112,7 +112,14 @@ int main(int argc, char ** argv) {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
+    // Be sure to activate the shader.
     glUseProgram(program);
+
+    auto currentTime  = static_cast<float>(glfwGetTime());
+    auto colorValue   = (sin(currentTime) / 2.0f) + 0.5f;
+    auto colorUniform = glGetUniformLocation(program, "ourColor");
+    glUniform4f(colorUniform, 0.0f, colorValue, 0.0f, 1.0f);
+
     glBindVertexArray(vao);
     glDrawElements(GL_TRIANGLES, sizeof(indices), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
