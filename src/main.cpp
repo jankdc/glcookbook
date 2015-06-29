@@ -67,9 +67,10 @@ int main(int argc, char ** argv) {
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // GL_LINE for wireframe mode.
 
   GLfloat vertices[] = {
-   0.0f,  0.5f, 0.0f,  // Top
-   0.5f, -0.5f, 0.0f,  // Bottom Right
-  -0.5f, -0.5f, 0.0f,  // Bottom Left
+   // Positions         // Colors
+   0.5f, -0.5f, 0.0f,   1.0f, 0.0f, 0.0f, // Bottom Right
+  -0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f, // Bottom Left
+   0.0f,  0.5f, 0.0f,   0.0f, 0.0f, 1.0f  // Top
   };
 
   GLuint indices[] = {  // Note that we start from 0!
@@ -87,8 +88,13 @@ int main(int argc, char ** argv) {
   glGenBuffers(1, &vbo);
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), nullptr);
+
+  const auto stride = 6 * sizeof(GLfloat); // Size of data per vertex
+  const auto colorOffset = (GLvoid*)(3 * sizeof(GLfloat));
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, nullptr);
   glEnableVertexAttribArray(0);
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, colorOffset);
+  glEnableVertexAttribArray(1);
 
   GLuint ebo;
   glGenBuffers(1, &ebo);
@@ -114,12 +120,6 @@ int main(int argc, char ** argv) {
 
     // Be sure to activate the shader.
     glUseProgram(program);
-
-    auto currentTime  = static_cast<float>(glfwGetTime());
-    auto colorValue   = (sin(currentTime) / 2.0f) + 0.5f;
-    auto colorUniform = glGetUniformLocation(program, "ourColor");
-    glUniform4f(colorUniform, 0.0f, colorValue, 0.0f, 1.0f);
-
     glBindVertexArray(vao);
     glDrawElements(GL_TRIANGLES, sizeof(indices), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);

@@ -1,11 +1,10 @@
 #version 330 core
 
-// This is the final color output for each fragment.
-out vec4 color;
+in vec3 ourColor;
 
-// We set this variable in the OpenGL code.
-uniform vec4 ourColor;
+// This is the final color output for each fragment.
+out vec4 finalColor;
 
 void main() {
-  color = ourColor;
+  finalColor = vec4(ourColor, 1.0f);
 }

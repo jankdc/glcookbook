@@ -1,11 +1,12 @@
 #version 330 core
 
 layout (location = 0) in vec3 position;
+layout (location = 1) in vec3 color;
 
-// We set this variable in the OpenGL code.
-uniform vec4 ourColor;
+out vec3 ourColor;
 
 void main() {
   // See how we directly give a vec3 to vec4's contructor.
   gl_Position = vec4(position, 1.0);
+  ourColor = color;
 }
