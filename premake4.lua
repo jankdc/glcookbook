@@ -16,8 +16,7 @@ solution "glcookbook"
         }
 
         links {
-            "freeimageplus",
-            "assimp"
+            "freeimageplus"
         }
 
     configuration {"gmake"}
@@ -28,6 +27,7 @@ solution "glcookbook"
 
     configuration {"macosx"}
         links {
+            "assimp",
             "glfw3",
             "GLEW",
             "Cocoa.framework",
@@ -38,7 +38,8 @@ solution "glcookbook"
 
     configuration {"linux"}
         links {
-            "glfw3",
+            "assimp",
+            "glfw",
             "GLEW",
             "GL",
             "X11",

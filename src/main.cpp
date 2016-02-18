@@ -148,9 +148,9 @@ std::string getFileContents(std::string path) {
 }
 
 GLuint makeShader(std::string path, GLenum type) {
-  const auto shaderSrc    = getFileContents(path);
-  const auto shaderSrcId  = glCreateShader(type);
-  const auto shaderSrcRaw = shaderSrc.c_str();
+  auto shaderSrc    = getFileContents(path);
+  auto shaderSrcId  = glCreateShader(type);
+  auto shaderSrcRaw = shaderSrc.c_str();
   glShaderSource(shaderSrcId, 1, &shaderSrcRaw, nullptr);
   glCompileShader(shaderSrcId);
   return shaderSrcId;
